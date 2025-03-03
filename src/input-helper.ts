@@ -135,6 +135,14 @@ export async function getInputs(): Promise<IGitSourceSettings> {
   core.debug(`submodules = ${result.submodules}`)
   core.debug(`recursive submodules = ${result.nestedSubmodules}`)
 
+  // SubmodulesCSV
+  result.submodulesCSV = false
+  const submodulesString = (core.getInput('submodulesCSV') || '').toUpperCase()
+  if (submodulesString == 'TRUE') {
+    result.submodulesCSV = true
+  }
+  core.debug(`submodulesCSV = ${result.submodulesCSV}`)
+  
   // Auth token
   result.authToken = core.getInput('token', {required: true})
 
