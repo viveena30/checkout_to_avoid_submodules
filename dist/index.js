@@ -1186,8 +1186,6 @@ function getSource(settings) {
         const repositoryUrl = urlHelper.getFetchUrl(settings);
         // include branchswitchlistcsv here
         const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist folder
-        // Read the CSV file
-        const csvData = fs.readFileSync(csvFilePath, 'utf8');
         // Remove conflicting file path
         if (fsHelper.fileExistsSync(settings.repositoryPath)) {
             yield io.rmRF(settings.repositoryPath);
@@ -1361,7 +1359,7 @@ function getSource(settings) {
                 core.startGroup('Setting up auth for fetching submodules');
                 yield authHelper.configureGlobalAuth();
                 core.endGroup();
-                // Checkout repo listed submodules
+                // Checkout repo listed as submodules before
                 core.startGroup('parse CSV file');
                 if (!fs.existsSync(csvFilePath)) {
                     console.error(`CSV file not found: ${csvFilePath}`);
@@ -1383,7 +1381,7 @@ function getSource(settings) {
                     const ref = columns[1];
                     console.log(`Checking out submodule-repository: ${repoName} at ref: ${ref}`);
                     // use checkout action function
-                    // await git.checkout(repoName, ref)
+                    await git.checkout(repoName, ref)
                     console.log(`Successfully checked out ${repoName} to ${ref}`);
                 }
                 core.endGroup();
