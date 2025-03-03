@@ -1383,7 +1383,7 @@ function getSource(settings) {
                     const ref = columns[1];
                     console.log(`Checking out submodule-repository: ${repoName} at ref: ${ref}`);
                     // use checkout action function
-                    // await git.checkout(repoName, ref)
+                    git.checkout(repoName, ref)
                     console.log(`Successfully checked out ${repoName} to ${ref}`);
                 }
                 core.endGroup();
