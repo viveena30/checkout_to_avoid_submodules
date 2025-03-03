@@ -137,8 +137,8 @@ export async function getInputs(): Promise<IGitSourceSettings> {
 
   // SubmodulesCSV
   result.submodulesCSV = false
-  const submodulesString = (core.getInput('submodulesCSV') || '').toUpperCase()
-  if (submodulesString == 'TRUE') {
+  const submodulesCSVString = (core.getInput('submodulesCSV') || '').toUpperCase()
+  if (submodulesCSVString == 'TRUE') {
     result.submodulesCSV = true
   }
   core.debug(`submodulesCSV = ${result.submodulesCSV}`)
