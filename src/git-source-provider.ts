@@ -9,6 +9,8 @@ import * as path from 'path'
 import * as refHelper from './ref-helper'
 import * as stateHelper from './state-helper'
 import * as urlHelper from './url-helper'
+import * as fs from 'fs';
+
 import {
   MinimumGitSparseCheckoutVersion,
   IGitCommandManager
@@ -21,6 +23,14 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
     `Syncing repository: ${settings.repositoryOwner}/${settings.repositoryName}`
   )
   const repositoryUrl = urlHelper.getFetchUrl(settings)
+
+// include branchswitchlistcsv here
+
+const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist folder
+
+// Read the CSV file
+const csvData = fs.readFileSync(csvFilePath, 'utf8');
+
 
   // Remove conflicting file path
   if (fsHelper.fileExistsSync(settings.repositoryPath)) {
@@ -247,6 +257,54 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
         'git config --local gc.auto 0',
         settings.nestedSubmodules
       )
+      core.endGroup()
+
+      // Persist credentials
+      if (settings.persistCredentials) {
+        core.startGroup('Persisting credentials for submodules')
+        await authHelper.configureSubmoduleAuth()
+        core.endGroup()
+      }
+    }
+
+    // SubmodulesCSV - checkout to remove submodules
+    if (settings.submodulesCSV) {
+      // Temporarily override global config
+      core.startGroup('Setting up auth for fetching submodules')
+      await authHelper.configureGlobalAuth()
+      core.endGroup()
+
+      // Checkout repo listed submodules
+      core.startGroup('parse CSV file')
+      if (!fs.existsSync(csvFilePath)) {
+        console.error(`CSV file not found: ${csvFilePath}`);
+        return;
+      }
+
+      const csvData = fs.readFileSync(csvFilePath, 'utf-8');
+      const rows = csvData.trim().split('\n');
+
+      // check headers
+      const headers = rows[0].split(',').map(header => header.trim());
+
+      if (headers.length < 2 || headers[0] !== 'repo' || headers[1] !== 'ref') {
+          console.error('Invalid CSV format. Expected headers: repo, ref');
+          return;
+      }
+
+      for (let i = 1; i < rows.length; i++) {
+        const columns = rows[i].split(',').map(col => col.trim());
+        if (columns.length < 2) continue;  // Skip incomplete rows
+
+        const repoName = columns[0];
+        const ref = columns[1];
+
+        console.log(`Checking out submodule-repository: ${repoName} at ref: ${ref}`);
+
+        // use checkout action function
+        // await git.checkout(repoName, ref)
+        console.log(`Successfully checked out ${repoName} to ${ref}`);
+      }
       core.endGroup()
 
       // Persist credentials

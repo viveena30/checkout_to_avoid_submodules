@@ -68,6 +68,7 @@ export interface IGitSourceSettings {
    * Indicates whether to checkout submodules
    */
   submodules: boolean
+  submodulesCSV: boolean
 
   /**
    * Indicates whether to recursively checkout submodules
