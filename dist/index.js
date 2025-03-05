@@ -1390,6 +1390,9 @@ function getSource(settings) {
                     if (SubmoduleRepoName.includes('/')) {
                         [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
                     }
+                    else {
+                        settings.repositoryName = SubmoduleRepoName;
+                    }
                     console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
                     git.checkoutSubmodules(SubmoduleRef);
                     console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);

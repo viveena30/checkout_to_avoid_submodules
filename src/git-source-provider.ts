@@ -301,6 +301,8 @@ const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist 
 
         if (SubmoduleRepoName.includes('/')){
           [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
+        } else {
+          settings.repositoryName = SubmoduleRepoName
         }
         
         console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);         
