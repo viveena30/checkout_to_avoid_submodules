@@ -621,12 +621,6 @@ class GitCommandManager {
             yield this.execGit(args);
         });
     }
-    checkoutSubmodules(ref) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const args = ['checkout', '--progress', '--force', ref];
-            yield this.execGit(args);
-        });
-    }
     checkoutDetach() {
         return __awaiter(this, void 0, void 0, function* () {
             const args = ['checkout', '--detach'];
@@ -1183,8 +1177,6 @@ const path = __importStar(__nccwpck_require__(1017));
 const refHelper = __importStar(__nccwpck_require__(8601));
 const stateHelper = __importStar(__nccwpck_require__(4866));
 const urlHelper = __importStar(__nccwpck_require__(9437));
-const input_helper_1 = __nccwpck_require__(5480);
-const fs = __importStar(__nccwpck_require__(7147));
 const git_command_manager_1 = __nccwpck_require__(738);
 function getSource(settings) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1352,50 +1344,6 @@ function getSource(settings) {
                 yield git.submoduleSync(settings.nestedSubmodules);
                 yield git.submoduleUpdate(settings.fetchDepth, settings.nestedSubmodules);
                 yield git.submoduleForeach('git config --local gc.auto 0', settings.nestedSubmodules);
-                core.endGroup();
-                // Persist credentials
-                if (settings.persistCredentials) {
-                    core.startGroup('Persisting credentials for submodules');
-                    yield authHelper.configureSubmoduleAuth();
-                    core.endGroup();
-                }
-            }
-            // repo - jsnjnv
-            // path -vndbn
-            // submodulesCSV: true
-            // SubmodulesCSV - checkout to avoid submodules
-            if (settings.submodulesCSV) {
-                // Checkout repo listed submodules
-                core.startGroup('parse CSV file');
-                if (!fs.existsSync(csvFilePath)) {
-                    console.error(`CSV file not found: ${csvFilePath}`);
-                    return;
-                }
-                const csvData = fs.readFileSync(csvFilePath, 'utf-8');
-                const rows = csvData.trim().split('\n');
-                // check headers
-                const headers = rows[0].split(',').map(header => header.trim());
-                if (headers.length < 2 || headers[0] !== 'repo' || headers[1] !== 'ref') {
-                    console.error('Invalid CSV format. Expected headers: repo, ref');
-                    return;
-                }
-                const settings = yield (0, input_helper_1.getInputs)();
-                for (let i = 1; i < rows.length; i++) {
-                    const columns = rows[i].split(',').map(col => col.trim());
-                    if (columns.length < 2)
-                        continue; // Skip incomplete rows
-                    const SubmoduleRepoName = columns[0];
-                    const SubmoduleRef = columns[1];
-                    if (SubmoduleRepoName.includes('/')) {
-                        [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
-                    }
-                    else {
-                        settings.repositoryName = SubmoduleRepoName;
-                    }
-                    console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
-                    git.checkoutSubmodules(SubmoduleRef);
-                    console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
-                }
                 core.endGroup();
                 // Persist credentials
                 if (settings.persistCredentials) {

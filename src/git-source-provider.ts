@@ -265,60 +265,6 @@ const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist 
       }
     }
 
-    // repo - jsnjnv
-    // path -vndbn
-    // submodulesCSV: true
-
-    // SubmodulesCSV - checkout to avoid submodules
-    if (settings.submodulesCSV) {
-
-      // Checkout repo listed submodules
-      core.startGroup('parse CSV file')
-      if (!fs.existsSync(csvFilePath)) {
-        console.error(`CSV file not found: ${csvFilePath}`);
-        return;
-      }
-
-      const csvData = fs.readFileSync(csvFilePath, 'utf-8');
-      const rows = csvData.trim().split('\n');
-      // check headers
-      const headers = rows[0].split(',').map(header => header.trim());
-
-      if (headers.length < 2 || headers[0] !== 'repo' || headers[1] !== 'ref') {
-          console.error('Invalid CSV format. Expected headers: repo, ref');
-          return;
-      }
-
-      const settings = await getInputs();
-
-      for (let i = 1; i < rows.length; i++) {
-        const columns = rows[i].split(',').map(col => col.trim());
-        if (columns.length < 2) continue;  // Skip incomplete rows
-        const SubmoduleRepoName = columns[0];
-        const SubmoduleRef = columns[1];
-
-        if (SubmoduleRepoName.includes('/')){
-          [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
-        } else {
-          settings.repositoryName = SubmoduleRepoName
-        }
-        
-        console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);         
-        git.checkoutSubmodules(SubmoduleRef);
-        console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`); 
-      }
-
-      core.endGroup()
-
-
-      // Persist credentials
-      if (settings.persistCredentials) {
-        core.startGroup('Persisting credentials for submodules')
-        await authHelper.configureSubmoduleAuth()
-        core.endGroup()
-      }
-    }
-
     // Get commit information
     const commitInfo = await git.log1()
 

@@ -23,7 +23,6 @@ export interface IGitCommandManager {
   sparseCheckout(sparseCheckout: string[]): Promise<void>
   sparseCheckoutNonConeMode(sparseCheckout: string[]): Promise<void>
   checkout(ref: string, startPoint: string): Promise<void>
-  checkoutSubmodules(ref: string): Promise<void>
   checkoutDetach(): Promise<void>
   config(
     configKey: string,
@@ -214,12 +213,6 @@ class GitCommandManager {
 
     await this.execGit(args)
   }
-
-  async checkoutSubmodules(ref: string): Promise<void> {
-    const args = ['checkout', '--progress', '--force', ref];
-
-    await this.execGit(args);
-}
 
   async checkoutDetach(): Promise<void> {
     const args = ['checkout', '--detach']
