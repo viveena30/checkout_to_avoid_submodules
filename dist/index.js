@@ -1385,7 +1385,7 @@ function getSource(settings) {
                     const columns = rows[i].split(',').map(col => col.trim());
                     if (columns.length < 2)
                         continue; // Skip incomplete rows
-<<<<<<< HEAD
+
                     const SubmoduleRepoName = columns[0];
                     const SubmoduleRef = columns[1];
                     if (SubmoduleRepoName.includes('/')) {
@@ -1397,14 +1397,12 @@ function getSource(settings) {
                     console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
                     git.checkoutSubmodules(SubmoduleRef);
                     console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
-=======
                     const repoName = columns[0];
                     const ref = columns[1];
                     console.log(`Checking out submodule-repository: ${repoName} at ref: ${ref}`);
                     // use checkout action function
                     git.checkout(repoName, ref)
                     console.log(`Successfully checked out ${repoName} to ${ref}`);
->>>>>>> 22f80d23ace41536c0283778b6cde4ef66aca42f
                 }
                 core.endGroup();
                 // Persist credentials
