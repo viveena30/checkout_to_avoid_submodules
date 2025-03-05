@@ -5,8 +5,8 @@ import * as path from 'path'
 import * as workflowContextHelper from './workflow-context-helper'
 import {IGitSourceSettings} from './git-source-settings'
 
-export async function getInputs(): Promise<IGitSourceSettings> {
-  const result = {} as unknown as IGitSourceSettings
+  export async function getInputs(): Promise<IGitSourceSettings> {
+    const result = {} as unknown as IGitSourceSettings
 
   // GitHub workspace
   let githubWorkspacePath = process.env['GITHUB_WORKSPACE']

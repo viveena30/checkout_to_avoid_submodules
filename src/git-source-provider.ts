@@ -9,6 +9,7 @@ import * as path from 'path'
 import * as refHelper from './ref-helper'
 import * as stateHelper from './state-helper'
 import * as urlHelper from './url-helper'
+import { getInputs } from './input-helper';
 import * as fs from 'fs';
 
 import {
@@ -27,10 +28,6 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
 // include branchswitchlistcsv here
 
 const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist folder
-
-// Read the CSV file
-const csvData = fs.readFileSync(csvFilePath, 'utf8');
-
 
   // Remove conflicting file path
   if (fsHelper.fileExistsSync(settings.repositoryPath)) {
@@ -267,8 +264,11 @@ const csvData = fs.readFileSync(csvFilePath, 'utf8');
       }
     }
 
-    // SubmodulesCSV - checkout to remove submodules
+    // SubmodulesCSV - checkout to avoid submodules
     if (settings.submodulesCSV) {
+
+      
+
       // Temporarily override global config
       core.startGroup('Setting up auth for fetching submodules')
       await authHelper.configureGlobalAuth()
@@ -283,7 +283,6 @@ const csvData = fs.readFileSync(csvFilePath, 'utf8');
 
       const csvData = fs.readFileSync(csvFilePath, 'utf-8');
       const rows = csvData.trim().split('\n');
-
       // check headers
       const headers = rows[0].split(',').map(header => header.trim());
 
@@ -292,18 +291,21 @@ const csvData = fs.readFileSync(csvFilePath, 'utf8');
           return;
       }
 
+      const settings = await getInputs();
+
       for (let i = 1; i < rows.length; i++) {
         const columns = rows[i].split(',').map(col => col.trim());
         if (columns.length < 2) continue;  // Skip incomplete rows
+        const SubmoduleRepoName = columns[0];
+        const SubmoduleRef = columns[1];
 
-        const repoName = columns[0];
-        const ref = columns[1];
-
-        console.log(`Checking out submodule-repository: ${repoName} at ref: ${ref}`);
-
-        // use checkout action function
-        // await git.checkout(repoName, ref)
-        console.log(`Successfully checked out ${repoName} to ${ref}`);
+        if (SubmoduleRepoName.includes('/')){
+          [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
+        }
+        
+        console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);         
+        git.checkoutSubmodules(SubmoduleRef);
+        console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`); 
       }
       core.endGroup()
 

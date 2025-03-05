@@ -621,6 +621,12 @@ class GitCommandManager {
             yield this.execGit(args);
         });
     }
+    checkoutSubmodules(ref) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const args = ['checkout', '--progress', '--force', ref];
+            yield this.execGit(args);
+        });
+    }
     checkoutDetach() {
         return __awaiter(this, void 0, void 0, function* () {
             const args = ['checkout', '--detach'];
@@ -1177,6 +1183,7 @@ const path = __importStar(__nccwpck_require__(1017));
 const refHelper = __importStar(__nccwpck_require__(8601));
 const stateHelper = __importStar(__nccwpck_require__(4866));
 const urlHelper = __importStar(__nccwpck_require__(9437));
+const input_helper_1 = __nccwpck_require__(5480);
 const fs = __importStar(__nccwpck_require__(7147));
 const git_command_manager_1 = __nccwpck_require__(738);
 function getSource(settings) {
@@ -1186,8 +1193,6 @@ function getSource(settings) {
         const repositoryUrl = urlHelper.getFetchUrl(settings);
         // include branchswitchlistcsv here
         const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist folder
-        // Read the CSV file
-        const csvData = fs.readFileSync(csvFilePath, 'utf8');
         // Remove conflicting file path
         if (fsHelper.fileExistsSync(settings.repositoryPath)) {
             yield io.rmRF(settings.repositoryPath);
@@ -1355,7 +1360,7 @@ function getSource(settings) {
                     core.endGroup();
                 }
             }
-            // SubmodulesCSV - checkout to remove submodules
+            // SubmodulesCSV - checkout to avoid submodules
             if (settings.submodulesCSV) {
                 // Temporarily override global config
                 core.startGroup('Setting up auth for fetching submodules');
@@ -1375,16 +1380,19 @@ function getSource(settings) {
                     console.error('Invalid CSV format. Expected headers: repo, ref');
                     return;
                 }
+                const settings = yield (0, input_helper_1.getInputs)();
                 for (let i = 1; i < rows.length; i++) {
                     const columns = rows[i].split(',').map(col => col.trim());
                     if (columns.length < 2)
                         continue; // Skip incomplete rows
-                    const repoName = columns[0];
-                    const ref = columns[1];
-                    console.log(`Checking out submodule-repository: ${repoName} at ref: ${ref}`);
-                    // use checkout action function
-                    // await git.checkout(repoName, ref)
-                    console.log(`Successfully checked out ${repoName} to ${ref}`);
+                    const SubmoduleRepoName = columns[0];
+                    const SubmoduleRef = columns[1];
+                    if (SubmoduleRepoName.includes('/')) {
+                        [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
+                    }
+                    console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
+                    git.checkoutSubmodules(SubmoduleRef);
+                    console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
                 }
                 core.endGroup();
                 // Persist credentials
