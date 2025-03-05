@@ -10,6 +10,7 @@ import * as refHelper from './ref-helper'
 import * as stateHelper from './state-helper'
 import * as urlHelper from './url-helper'
 import { getInputs } from './input-helper';
+
 import * as fs from 'fs';
 
 import {
@@ -264,15 +265,12 @@ const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist 
       }
     }
 
+    // repo - jsnjnv
+    // path -vndbn
+    // submodulesCSV: true
+
     // SubmodulesCSV - checkout to avoid submodules
     if (settings.submodulesCSV) {
-
-      
-
-      // Temporarily override global config
-      core.startGroup('Setting up auth for fetching submodules')
-      await authHelper.configureGlobalAuth()
-      core.endGroup()
 
       // Checkout repo listed submodules
       core.startGroup('parse CSV file')
@@ -293,47 +291,23 @@ const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist 
 
       const settings = await getInputs();
 
-      // for (let i = 1; i < rows.length; i++) {
-      //   const columns = rows[i].split(',').map(col => col.trim());
-      //   if (columns.length < 2) continue;  // Skip incomplete rows
-      //   const SubmoduleRepoName = columns[0];
-      //   const SubmoduleRef = columns[1];
-
-      //   if (SubmoduleRepoName.includes('/')){
-      //     [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
-      //   } else {
-      //     settings.repositoryName = SubmoduleRepoName
-      //   }
-        
-      //   console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);         
-      //   git.checkoutSubmodules(SubmoduleRef);
-      //   console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`); 
-      // }
-
       for (let i = 1; i < rows.length; i++) {
         const columns = rows[i].split(',').map(col => col.trim());
-        
         if (columns.length < 2) continue;  // Skip incomplete rows
-    
         const SubmoduleRepoName = columns[0];
         const SubmoduleRef = columns[1];
-    
-        if (SubmoduleRepoName.includes('/')) {
-            [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
+
+        if (SubmoduleRepoName.includes('/')){
+          [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
         } else {
-            settings.repositoryName = SubmoduleRepoName;
+          settings.repositoryName = SubmoduleRepoName
         }
-    
-        console.log(`Checking out submodule repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
-    
-        if (git && typeof git.checkoutSubmodules === 'function') {
-            await git.checkoutSubmodules(SubmoduleRef); // Ensure it's awaited
-            console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
-        } else {
-            console.error(`Error: git.checkoutSubmodules is not defined or not a function.`);
-        }
-    }
-    
+        
+        console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);         
+        git.checkoutSubmodules(SubmoduleRef);
+        console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`); 
+      }
+
       core.endGroup()
 
 
@@ -439,3 +413,5 @@ async function getGitCommandManager(
     return undefined
   }
 }
+
+

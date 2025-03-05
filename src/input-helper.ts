@@ -5,7 +5,12 @@ import * as path from 'path'
 import * as workflowContextHelper from './workflow-context-helper'
 import {IGitSourceSettings} from './git-source-settings'
 
-  export async function getInputs(): Promise<IGitSourceSettings> {
+
+export async function getInputs(
+  repositoryOwner?: string,
+  repositoryName?: string, 
+  repositoryRef?: string
+): Promise<IGitSourceSettings> {
     const result = {} as unknown as IGitSourceSettings
 
   // GitHub workspace
@@ -16,7 +21,11 @@ import {IGitSourceSettings} from './git-source-settings'
   githubWorkspacePath = path.resolve(githubWorkspacePath)
   core.debug(`GITHUB_WORKSPACE = '${githubWorkspacePath}'`)
   fsHelper.directoryExistsSync(githubWorkspacePath, true)
-
+ 
+  if (repositoryOwner && repositoryName) {
+    result.repositoryOwner = repositoryOwner;
+    result.repositoryName = repositoryName;
+  } else {
   // Qualified repository
   const qualifiedRepository =
     core.getInput('repository') ||
@@ -34,6 +43,7 @@ import {IGitSourceSettings} from './git-source-settings'
   }
   result.repositoryOwner = splitRepository[0]
   result.repositoryName = splitRepository[1]
+}
 
   // Repository path
   result.repositoryPath = core.getInput('path') || '.'
@@ -52,11 +62,14 @@ import {IGitSourceSettings} from './git-source-settings'
   }
 
   // Workflow repository?
-  const isWorkflowRepository =
-    qualifiedRepository.toUpperCase() ===
-    `${github.context.repo.owner}/${github.context.repo.repo}`.toUpperCase()
+  const isWorkflowRepository = true
+    // qualifiedRepository.toUpperCase() ===
+    // `${github.context.repo.owner}/${github.context.repo.repo}`.toUpperCase()
 
   // Source branch, source version
+  if(repositoryRef){
+    result.ref = repositoryRef;
+  } 
   result.ref = core.getInput('ref')
   if (!result.ref) {
     if (isWorkflowRepository) {
@@ -171,3 +184,7 @@ import {IGitSourceSettings} from './git-source-settings'
 
   return result
 }
+export function getSubmodulesInputs() {
+  throw new Error('Function not implemented.')
+}
+

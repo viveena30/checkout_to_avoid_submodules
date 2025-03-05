@@ -1360,12 +1360,11 @@ function getSource(settings) {
                     core.endGroup();
                 }
             }
+            // repo - jsnjnv
+            // path -vndbn
+            // submodulesCSV: true
             // SubmodulesCSV - checkout to avoid submodules
             if (settings.submodulesCSV) {
-                // Temporarily override global config
-                core.startGroup('Setting up auth for fetching submodules');
-                yield authHelper.configureGlobalAuth();
-                core.endGroup();
                 // Checkout repo listed submodules
                 core.startGroup('parse CSV file');
                 if (!fs.existsSync(csvFilePath)) {
@@ -1381,20 +1380,6 @@ function getSource(settings) {
                     return;
                 }
                 const settings = yield (0, input_helper_1.getInputs)();
-                // for (let i = 1; i < rows.length; i++) {
-                //   const columns = rows[i].split(',').map(col => col.trim());
-                //   if (columns.length < 2) continue;  // Skip incomplete rows
-                //   const SubmoduleRepoName = columns[0];
-                //   const SubmoduleRef = columns[1];
-                //   if (SubmoduleRepoName.includes('/')){
-                //     [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
-                //   } else {
-                //     settings.repositoryName = SubmoduleRepoName
-                //   }
-                //   console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);         
-                //   git.checkoutSubmodules(SubmoduleRef);
-                //   console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`); 
-                // }
                 for (let i = 1; i < rows.length; i++) {
                     const columns = rows[i].split(',').map(col => col.trim());
                     if (columns.length < 2)
@@ -1407,14 +1392,9 @@ function getSource(settings) {
                     else {
                         settings.repositoryName = SubmoduleRepoName;
                     }
-                    console.log(`Checking out submodule repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
-                    if (git && typeof git.checkoutSubmodules === 'function') {
-                        yield git.checkoutSubmodules(SubmoduleRef); // Ensure it's awaited
-                        console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
-                    }
-                    else {
-                        console.error(`Error: git.checkoutSubmodules is not defined or not a function.`);
-                    }
+                    console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
+                    git.checkoutSubmodules(SubmoduleRef);
+                    console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
                 }
                 core.endGroup();
                 // Persist credentials
@@ -1780,12 +1760,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getInputs = getInputs;
+exports.getSubmodulesInputs = getSubmodulesInputs;
 const core = __importStar(__nccwpck_require__(2186));
 const fsHelper = __importStar(__nccwpck_require__(7219));
 const github = __importStar(__nccwpck_require__(5438));
 const path = __importStar(__nccwpck_require__(1017));
 const workflowContextHelper = __importStar(__nccwpck_require__(9568));
-function getInputs() {
+function getInputs(repositoryOwner, repositoryName, repositoryRef) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = {};
         // GitHub workspace
@@ -1796,18 +1777,24 @@ function getInputs() {
         githubWorkspacePath = path.resolve(githubWorkspacePath);
         core.debug(`GITHUB_WORKSPACE = '${githubWorkspacePath}'`);
         fsHelper.directoryExistsSync(githubWorkspacePath, true);
-        // Qualified repository
-        const qualifiedRepository = core.getInput('repository') ||
-            `${github.context.repo.owner}/${github.context.repo.repo}`;
-        core.debug(`qualified repository = '${qualifiedRepository}'`);
-        const splitRepository = qualifiedRepository.split('/');
-        if (splitRepository.length !== 2 ||
-            !splitRepository[0] ||
-            !splitRepository[1]) {
-            throw new Error(`Invalid repository '${qualifiedRepository}'. Expected format {owner}/{repo}.`);
+        if (repositoryOwner && repositoryName) {
+            result.repositoryOwner = repositoryOwner;
+            result.repositoryName = repositoryName;
         }
-        result.repositoryOwner = splitRepository[0];
-        result.repositoryName = splitRepository[1];
+        else {
+            // Qualified repository
+            const qualifiedRepository = core.getInput('repository') ||
+                `${github.context.repo.owner}/${github.context.repo.repo}`;
+            core.debug(`qualified repository = '${qualifiedRepository}'`);
+            const splitRepository = qualifiedRepository.split('/');
+            if (splitRepository.length !== 2 ||
+                !splitRepository[0] ||
+                !splitRepository[1]) {
+                throw new Error(`Invalid repository '${qualifiedRepository}'. Expected format {owner}/{repo}.`);
+            }
+            result.repositoryOwner = splitRepository[0];
+            result.repositoryName = splitRepository[1];
+        }
         // Repository path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
@@ -1815,9 +1802,13 @@ function getInputs() {
             throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
         }
         // Workflow repository?
-        const isWorkflowRepository = qualifiedRepository.toUpperCase() ===
-            `${github.context.repo.owner}/${github.context.repo.repo}`.toUpperCase();
+        const isWorkflowRepository = true;
+        // qualifiedRepository.toUpperCase() ===
+        // `${github.context.repo.owner}/${github.context.repo.repo}`.toUpperCase()
         // Source branch, source version
+        if (repositoryRef) {
+            result.ref = repositoryRef;
+        }
         result.ref = core.getInput('ref');
         if (!result.ref) {
             if (isWorkflowRepository) {
@@ -1915,6 +1906,9 @@ function getInputs() {
         return result;
     });
 }
+function getSubmodulesInputs() {
+    throw new Error('Function not implemented.');
+}
 
 
 /***/ }),
@@ -1963,6 +1957,7 @@ const gitSourceProvider = __importStar(__nccwpck_require__(9210));
 const inputHelper = __importStar(__nccwpck_require__(5480));
 const path = __importStar(__nccwpck_require__(1017));
 const stateHelper = __importStar(__nccwpck_require__(4866));
+const fs = __importStar(__nccwpck_require__(7147));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -1971,13 +1966,47 @@ function run() {
             try {
                 // Register problem matcher
                 coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
-                // Get sources
+                // Get main sources
                 yield gitSourceProvider.getSource(sourceSettings);
                 core.setOutput('ref', sourceSettings.ref);
             }
             finally {
                 // Unregister problem matcher
                 coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
+            }
+            // Check if submodulesCSV exists and process submodules
+            if (sourceSettings.submodulesCSV) {
+                const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
+                const csvContent = fs.readFileSync(csvFilePath, 'utf8');
+                const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+                for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
+                    const columns = rows[i].split(',').map(col => col.trim());
+                    if (columns.length < 2)
+                        continue; // Skip invalid rows
+                    const SubmoduleRepoName = columns[0];
+                    const repositoryRef = columns[1];
+                    let repositoryOwner;
+                    let repositoryName;
+                    if (SubmoduleRepoName.includes('/')) {
+                        [repositoryOwner, repositoryName] = SubmoduleRepoName.split('/');
+                    }
+                    else {
+                        repositoryName = SubmoduleRepoName;
+                    }
+                    // Get submodule input settings dynamically
+                    const sourceSubmoduleSettings = yield inputHelper.getInputs(repositoryOwner, repositoryName, repositoryRef);
+                    try {
+                        // Register problem matcher again
+                        coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
+                        // Get sources for submodules
+                        yield gitSourceProvider.getSource(sourceSubmoduleSettings);
+                        core.setOutput('ref', sourceSubmoduleSettings.ref);
+                    }
+                    finally {
+                        // Unregister problem matcher
+                        coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
+                    }
+                }
             }
         }
         catch (error) {
@@ -2000,7 +2029,6 @@ function cleanup() {
 if (!stateHelper.IsPost) {
     run();
 }
-// Post
 else {
     cleanup();
 }
