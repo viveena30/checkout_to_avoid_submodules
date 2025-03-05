@@ -1183,8 +1183,6 @@ function getSource(settings) {
         // Repository URL
         core.info(`Syncing repository: ${settings.repositoryOwner}/${settings.repositoryName}`);
         const repositoryUrl = urlHelper.getFetchUrl(settings);
-        // include branchswitchlistcsv here
-        const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist folder
         // Remove conflicting file path
         if (fsHelper.fileExistsSync(settings.repositoryPath)) {
             yield io.rmRF(settings.repositoryPath);
@@ -1910,21 +1908,10 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
         try {
-            const sourceSettings = yield inputHelper.getInputs();
-            try {
-                // Register problem matcher
-                coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
-                // Get main sources
-                yield gitSourceProvider.getSource(sourceSettings);
-                core.setOutput('ref', sourceSettings.ref);
-            }
-            finally {
-                // Unregister problem matcher
-                coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
-            }
+            const submodulesCSV = (yield inputHelper.getInputs()).submodulesCSV;
             // Check if submodulesCSV exists and process submodules
-            if (sourceSettings.submodulesCSV) {
-                const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
+            if (submodulesCSV) {
+                const csvFilePath = './BranchSwitchListTest.csv'; // Path to CSV file
                 const csvContent = fs.readFileSync(csvFilePath, 'utf8');
                 const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
                 for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
@@ -1933,10 +1920,9 @@ function run() {
                         continue; // Skip invalid rows
                     const SubmoduleRepoName = columns[0];
                     const repositoryRef = columns[1];
-                    let repositoryOwner;
-                    let repositoryName;
+                    
                     if (SubmoduleRepoName.includes('/')) {
-                        [repositoryOwner, repositoryName] = SubmoduleRepoName.split('/');
+                        [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
                     }
                     else {
                         repositoryName = SubmoduleRepoName;

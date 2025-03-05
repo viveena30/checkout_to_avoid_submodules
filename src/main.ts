@@ -8,26 +8,11 @@ import * as fs from 'fs';
 
 async function run(): Promise<void> {
   try {
-    const sourceSettings = await inputHelper.getInputs();
-    try {
-      // Register problem matcher
-      coreCommand.issueCommand(
-        'add-matcher',
-        {},
-        path.join(__dirname, 'problem-matcher.json')
-      );
-
-      // Get main sources
-      await gitSourceProvider.getSource(sourceSettings);
-      core.setOutput('ref', sourceSettings.ref);
-    } finally {
-      // Unregister problem matcher
-      coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
-    }
-
+    const submodulesCSV = (await inputHelper.getInputs()).submodulesCSV;
+  
     // Check if submodulesCSV exists and process submodules
-    if (sourceSettings.submodulesCSV) {
-      const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
+    if (submodulesCSV) {
+      const csvFilePath = './BranchSwitchListTest.csv'; // Path to CSV file
       const csvContent = fs.readFileSync(csvFilePath, 'utf8');
       const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
 

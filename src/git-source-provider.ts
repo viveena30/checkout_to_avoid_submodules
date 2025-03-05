@@ -26,10 +26,6 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
   )
   const repositoryUrl = urlHelper.getFetchUrl(settings)
 
-// include branchswitchlistcsv here
-
-const csvFilePath = 'BranchSwitchListTest.csv'; // CSV file is directly in dist folder
-
   // Remove conflicting file path
   if (fsHelper.fileExistsSync(settings.repositoryPath)) {
     await io.rmRF(settings.repositoryPath)
