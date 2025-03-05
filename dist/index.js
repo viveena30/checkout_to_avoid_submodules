@@ -1381,11 +1381,24 @@ function getSource(settings) {
                     return;
                 }
                 const settings = yield (0, input_helper_1.getInputs)();
+                // for (let i = 1; i < rows.length; i++) {
+                //   const columns = rows[i].split(',').map(col => col.trim());
+                //   if (columns.length < 2) continue;  // Skip incomplete rows
+                //   const SubmoduleRepoName = columns[0];
+                //   const SubmoduleRef = columns[1];
+                //   if (SubmoduleRepoName.includes('/')){
+                //     [settings.repositoryOwner, settings.repositoryName] = SubmoduleRepoName.split('/');
+                //   } else {
+                //     settings.repositoryName = SubmoduleRepoName
+                //   }
+                //   console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);         
+                //   git.checkoutSubmodules(SubmoduleRef);
+                //   console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`); 
+                // }
                 for (let i = 1; i < rows.length; i++) {
                     const columns = rows[i].split(',').map(col => col.trim());
                     if (columns.length < 2)
                         continue; // Skip incomplete rows
-
                     const SubmoduleRepoName = columns[0];
                     const SubmoduleRef = columns[1];
                     if (SubmoduleRepoName.includes('/')) {
@@ -1394,15 +1407,14 @@ function getSource(settings) {
                     else {
                         settings.repositoryName = SubmoduleRepoName;
                     }
-                    console.log(`Checking out submodule-repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
-                    git.checkoutSubmodules(SubmoduleRef);
-                    console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
-                    const repoName = columns[0];
-                    const ref = columns[1];
-                    console.log(`Checking out submodule-repository: ${repoName} at ref: ${ref}`);
-                    // use checkout action function
-                    git.checkout(repoName, ref)
-                    console.log(`Successfully checked out ${repoName} to ${ref}`);
+                    console.log(`Checking out submodule repository: ${settings.repositoryName} at ref: ${SubmoduleRef}`);
+                    if (git && typeof git.checkoutSubmodules === 'function') {
+                        yield git.checkoutSubmodules(SubmoduleRef); // Ensure it's awaited
+                        console.log(`Successfully checked out ${settings.repositoryName} to ${SubmoduleRef}`);
+                    }
+                    else {
+                        console.error(`Error: git.checkoutSubmodules is not defined or not a function.`);
+                    }
                 }
                 core.endGroup();
                 // Persist credentials
