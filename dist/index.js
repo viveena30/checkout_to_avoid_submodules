@@ -1920,15 +1920,16 @@ function run() {
                         continue; // Skip invalid rows
                     const SubmoduleRepoName = columns[0];
                     const repositoryRef = columns[1];
+                    result.ref = repositoryRef;
                     
                     if (SubmoduleRepoName.includes('/')) {
                         [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
                     }
                     else {
-                        repositoryName = SubmoduleRepoName;
+                        result.repositoryName = SubmoduleRepoName;
                     }
                     // Get submodule input settings dynamically
-                    const sourceSubmoduleSettings = yield inputHelper.getInputs(repositoryOwner, repositoryName, repositoryRef);
+                    const sourceSubmoduleSettings = yield inputHelper.getInputs(result.repositoryOwner, result.repositoryName, result.ref);
                     try {
                         // Register problem matcher again
                         coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
