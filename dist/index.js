@@ -1742,9 +1742,9 @@ function getInputs(
         // Repository path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        }
+        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        // }
         // Workflow repository?
         const isWorkflowRepository = true;
         // qualifiedRepository.toUpperCase() ===
@@ -1839,8 +1839,7 @@ function getInputs(
         result.workflowOrganizationId =
             yield workflowContextHelper.getOrganizationId();
         // Set safe.directory in git global config.
-        result.setSafeDirectory =
-            (core.getInput('set-safe-directory') || 'true').toUpperCase() === 'TRUE';
+        result.setSafeDirectory = ('true').toUpperCase() === 'TRUE';
         // Determine the GitHub URL that the repository is being hosted from
         result.githubServerUrl = core.getInput('github-server-url');
         core.debug(`GitHub Host URL = ${result.githubServerUrl}`);
