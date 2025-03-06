@@ -22,10 +22,7 @@ export async function getInputs(
   core.debug(`GITHUB_WORKSPACE = '${githubWorkspacePath}'`)
   fsHelper.directoryExistsSync(githubWorkspacePath, true)
  
-  if (submoduleSource.repositoryOwner && repositoryName) {
-    result.repositoryOwner = repositoryOwner;
-    result.repositoryName = repositoryName;
-  } else {
+
   // Qualified repository
   const qualifiedRepository =
     core.getInput('repository') ||
@@ -43,7 +40,7 @@ export async function getInputs(
   }
   result.repositoryOwner = splitRepository[0]
   result.repositoryName = splitRepository[1]
-}
+
 
   // Repository path
   result.repositoryPath = core.getInput('path') || '.'
@@ -67,9 +64,6 @@ export async function getInputs(
     // `${github.context.repo.owner}/${github.context.repo.repo}`.toUpperCase()
 
   // Source branch, source version
-  if(repositoryRef){
-    result.ref = repositoryRef;
-  } 
   result.ref = core.getInput('ref')
   if (!result.ref) {
     if (isWorkflowRepository) {

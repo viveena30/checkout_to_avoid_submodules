@@ -5,14 +5,29 @@ import * as inputHelper from './input-helper';
 import * as path from 'path';
 import * as stateHelper from './state-helper';
 import * as fs from 'fs';
-import {getInputs} from './input-helper';
+
 async function run(): Promise<void> {
   try {
-    const submodulesCSV = (await inputHelper.getInputs()).submodulesCSV;
-  
+    const sourceSettings = await inputHelper.getInputs();
+    try {
+      // Register problem matcher
+      coreCommand.issueCommand(
+        'add-matcher',
+        {},
+        path.join(__dirname, 'problem-matcher.json')
+      );
+
+      // Get main sources
+      await gitSourceProvider.getSource(sourceSettings);
+      core.setOutput('ref', sourceSettings.ref);
+    } finally {
+      // Unregister problem matcher
+      coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
+    }
+
     // Check if submodulesCSV exists and process submodules
-    if (submodulesCSV) {
-      const csvFilePath = './BranchSwitchListTest.csv'; // Path to CSV file
+    if (sourceSettings.submodulesCSV) {
+      const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
       const csvContent = fs.readFileSync(csvFilePath, 'utf8');
       const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
 
@@ -23,17 +38,18 @@ async function run(): Promise<void> {
         const SubmoduleRepoName = columns[0];
         const repositoryRef = columns[1];
         
-        const submoduleSource = await inputHelper.getInputs()
-
         let repositoryOwner;
         let repositoryName;
 
         if (SubmoduleRepoName.includes('/')){
-          [submoduleSource.repositoryOwner, submoduleSource.repositoryName] = SubmoduleRepoName.split('/');
+          [repositoryOwner, repositoryName] = SubmoduleRepoName.split('/');
         } else {
-          submoduleSource.repositoryName = SubmoduleRepoName
+          repositoryName = SubmoduleRepoName
         }
 
+        // Get submodule input settings dynamically
+        const sourceSubmoduleSettings = await inputHelper.getInputs();
+        
         try {
           // Register problem matcher again
           coreCommand.issueCommand(
@@ -41,9 +57,6 @@ async function run(): Promise<void> {
             {},
             path.join(__dirname, 'problem-matcher.json')
           );
-
-          await gitSourceProvider.getSource(submoduleSource)
-          core.setOutput('ref', submoduleSource.ref)
 
           // Get sources for submodules
           await gitSourceProvider.getSource(sourceSubmoduleSettings);
