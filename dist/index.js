@@ -1934,14 +1934,18 @@ function run() {
                     else {
                         sourceSettings.repositoryName = SubmoduleRepoName;
                     }
+                    yield gitSourceProvider.getSource(sourceSettings);
+                    core.setOutput('ref', sourceSettings.ref);
+                    core.setOutput('repositoryName', sourceSettings.repositoryName);
+                    core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
                     try {
                         // Register problem matcher again
                         coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
                         // Get sources for submodules
-                        yield gitSourceProvider.getSource(sourceSettings);
-                        core.setOutput('ref', sourceSettings.ref);
-                        core.setOutput('repositoryName', sourceSettings.repositoryName);
-                        core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
+                        // await gitSourceProvider.getSource(sourceSettings);
+                        // core.setOutput('ref', sourceSettings.ref);
+                        // core.setOutput('repositoryName', sourceSettings.repositoryName);
+                        // core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
                     }
                     finally {
                         // Unregister problem matcher

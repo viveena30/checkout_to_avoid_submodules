@@ -45,6 +45,11 @@ async function run(): Promise<void> {
         } else {
           sourceSettings.repositoryName = SubmoduleRepoName
         }
+
+        await gitSourceProvider.getSource(sourceSettings);
+        core.setOutput('ref', sourceSettings.ref);
+        core.setOutput('repositoryName', sourceSettings.repositoryName);
+        core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
         
         try {
           // Register problem matcher again
@@ -55,12 +60,10 @@ async function run(): Promise<void> {
           );
 
           // Get sources for submodules
-          await gitSourceProvider.getSource(sourceSettings);
-          core.setOutput('ref', sourceSettings.ref);
-          core.setOutput('repositoryName', sourceSettings.repositoryName);
-          core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
-
-
+          // await gitSourceProvider.getSource(sourceSettings);
+          // core.setOutput('ref', sourceSettings.ref);
+          // core.setOutput('repositoryName', sourceSettings.repositoryName);
+          // core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
         } finally {
           // Unregister problem matcher
           coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
