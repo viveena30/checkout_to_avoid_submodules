@@ -1940,6 +1940,8 @@ function run() {
                         // Get sources for submodules
                         yield gitSourceProvider.getSource(sourceSettings);
                         core.setOutput('ref', sourceSettings.ref);
+                        core.setOutput('repositoryName', sourceSettings.repositoryName);
+                        core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
                     }
                     finally {
                         // Unregister problem matcher
