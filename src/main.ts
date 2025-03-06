@@ -5,7 +5,7 @@ import * as inputHelper from './input-helper';
 import * as path from 'path';
 import * as stateHelper from './state-helper';
 import * as fs from 'fs';
-
+import {getInputs} from './input-helper';
 async function run(): Promise<void> {
   try {
     const submodulesCSV = (await inputHelper.getInputs()).submodulesCSV;
@@ -23,17 +23,16 @@ async function run(): Promise<void> {
         const SubmoduleRepoName = columns[0];
         const repositoryRef = columns[1];
         
+        const submoduleSource = await inputHelper.getInputs()
+
         let repositoryOwner;
         let repositoryName;
 
         if (SubmoduleRepoName.includes('/')){
-          [repositoryOwner, repositoryName] = SubmoduleRepoName.split('/');
+          [submoduleSource.repositoryOwner, submoduleSource.repositoryName] = SubmoduleRepoName.split('/');
         } else {
-          repositoryName = SubmoduleRepoName
+          submoduleSource.repositoryName = SubmoduleRepoName
         }
-
-        // Get submodule input settings dynamically
-        const sourceSubmoduleSettings = await inputHelper.getInputs(repositoryOwner,repositoryName, repositoryRef);
 
         try {
           // Register problem matcher again
@@ -42,6 +41,9 @@ async function run(): Promise<void> {
             {},
             path.join(__dirname, 'problem-matcher.json')
           );
+
+          await gitSourceProvider.getSource(submoduleSource)
+          core.setOutput('ref', submoduleSource.ref)
 
           // Get sources for submodules
           await gitSourceProvider.getSource(sourceSubmoduleSettings);

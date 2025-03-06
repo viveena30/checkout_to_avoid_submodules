@@ -7,9 +7,9 @@ import {IGitSourceSettings} from './git-source-settings'
 
 
 export async function getInputs(
-  repositoryOwner?: string,
-  repositoryName?: string, 
-  repositoryRef?: string
+  // repositoryOwner?: string,
+  // repositoryName?: string, 
+  // repositoryRef?: string
 ): Promise<IGitSourceSettings> {
     const result = {} as unknown as IGitSourceSettings
 
@@ -22,7 +22,7 @@ export async function getInputs(
   core.debug(`GITHUB_WORKSPACE = '${githubWorkspacePath}'`)
   fsHelper.directoryExistsSync(githubWorkspacePath, true)
  
-  if (repositoryOwner && repositoryName) {
+  if (submoduleSource.repositoryOwner && repositoryName) {
     result.repositoryOwner = repositoryOwner;
     result.repositoryName = repositoryName;
   } else {
