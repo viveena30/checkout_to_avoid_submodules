@@ -9,9 +9,6 @@ import * as path from 'path'
 import * as refHelper from './ref-helper'
 import * as stateHelper from './state-helper'
 import * as urlHelper from './url-helper'
-import { getInputs } from './input-helper';
-
-import * as fs from 'fs';
 
 import {
   MinimumGitSparseCheckoutVersion,

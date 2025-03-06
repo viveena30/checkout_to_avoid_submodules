@@ -36,19 +36,15 @@ async function run(): Promise<void> {
         if (columns.length < 2) continue; // Skip invalid rows
 
         const SubmoduleRepoName = columns[0];
-        const repositoryRef = columns[1];
-        
-        let repositoryOwner;
-        let repositoryName;
+        // const SubmoduleRef = columns[1];
+        // sourceSettings.ref = SubmoduleRef
+        sourceSettings.ref = columns[1]
 
         if (SubmoduleRepoName.includes('/')){
-          [repositoryOwner, repositoryName] = SubmoduleRepoName.split('/');
+          [sourceSettings.repositoryOwner, sourceSettings.repositoryName] = SubmoduleRepoName.split('/');
         } else {
-          repositoryName = SubmoduleRepoName
+          sourceSettings.repositoryName = SubmoduleRepoName
         }
-
-        // Get submodule input settings dynamically
-        const sourceSubmoduleSettings = await inputHelper.getInputs();
         
         try {
           // Register problem matcher again
@@ -59,8 +55,8 @@ async function run(): Promise<void> {
           );
 
           // Get sources for submodules
-          await gitSourceProvider.getSource(sourceSubmoduleSettings);
-          core.setOutput('ref', sourceSubmoduleSettings.ref);
+          await gitSourceProvider.getSource(sourceSettings);
+          core.setOutput('ref', sourceSettings.ref);
         } finally {
           // Unregister problem matcher
           coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');

@@ -1925,23 +1925,21 @@ function run() {
                     if (columns.length < 2)
                         continue; // Skip invalid rows
                     const SubmoduleRepoName = columns[0];
-                    const repositoryRef = columns[1];
-                    let repositoryOwner;
-                    let repositoryName;
+                    // const SubmoduleRef = columns[1];
+                    // sourceSettings.ref = SubmoduleRef
+                    sourceSettings.ref = columns[1];
                     if (SubmoduleRepoName.includes('/')) {
-                        [repositoryOwner, repositoryName] = SubmoduleRepoName.split('/');
+                        [sourceSettings.repositoryOwner, sourceSettings.repositoryName] = SubmoduleRepoName.split('/');
                     }
                     else {
-                        repositoryName = SubmoduleRepoName;
+                        sourceSettings.repositoryName = SubmoduleRepoName;
                     }
-                    // Get submodule input settings dynamically
-                    const sourceSubmoduleSettings = yield inputHelper.getInputs();
                     try {
                         // Register problem matcher again
                         coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
                         // Get sources for submodules
-                        yield gitSourceProvider.getSource(sourceSubmoduleSettings);
-                        core.setOutput('ref', sourceSubmoduleSettings.ref);
+                        yield gitSourceProvider.getSource(sourceSettings);
+                        core.setOutput('ref', sourceSettings.ref);
                     }
                     finally {
                         // Unregister problem matcher
