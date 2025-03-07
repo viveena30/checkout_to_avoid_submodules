@@ -164,9 +164,9 @@
 //   result.persistCredentials =
 //     (core.getInput('persist-credentials') || 'false').toUpperCase() === 'TRUE'
 
-  // Workflow organization ID
-  result.workflowOrganizationId =
-    await workflowContextHelper.getOrganizationId()
+  // // Workflow organization ID
+  // result.workflowOrganizationId =
+  //   await workflowContextHelper.getOrganizationId()
 
 //   // Set safe.directory in git global config.
 //   result.setSafeDirectory =
@@ -277,6 +277,9 @@ export async function getInputs(): Promise<IGitSourceSettings> {
 
   // Auth Token
   result.authToken = core.getInput('token', { required: true })
+
+  // Workflow organization ID
+  result.workflowOrganizationId = await workflowContextHelper.getOrganizationId()
 
   // SSH Configuration
   result.sshKey = core.getInput('ssh-key') || ''
