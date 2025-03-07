@@ -1676,7 +1676,7 @@ function downloadArchive(authToken, owner, repo, ref, commit, baseUrl) {
 // import * as fsHelper from './fs-helper'
 // import * as github from '@actions/github'
 // import * as path from 'path'
-import * as workflowContextHelper from './workflow-context-helper'
+// import * as workflowContextHelper from './workflow-context-helper'
 // import {IGitSourceSettings} from './git-source-settings'
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
