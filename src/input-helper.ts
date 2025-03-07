@@ -164,9 +164,9 @@
 //   result.persistCredentials =
 //     (core.getInput('persist-credentials') || 'false').toUpperCase() === 'TRUE'
 
-//   // Workflow organization ID
-//   result.workflowOrganizationId =
-//     await workflowContextHelper.getOrganizationId()
+  // Workflow organization ID
+  result.workflowOrganizationId =
+    await workflowContextHelper.getOrganizationId()
 
 //   // Set safe.directory in git global config.
 //   result.setSafeDirectory =
