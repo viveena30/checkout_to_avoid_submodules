@@ -1888,14 +1888,14 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-<<<<<<< HEAD
-        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        }
+
+        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        // }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
-=======
+
         // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
         //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
         // }
@@ -1921,7 +1921,7 @@ function getInputs() {
             result.commit = result.ref;
             result.ref = '';
         }
->>>>>>> b685d796e5303a09e08c150235424fd49c528ca9
+
         core.debug(`ref = '${result.ref}'`);
         core.debug(`commit = '${result.commit}'`);
         // Clean
@@ -1967,7 +1967,7 @@ function getInputs() {
         core.debug(`submodules CSV = ${result.submodulesCSV}`);
         // Auth Token
         result.authToken = core.getInput('token', { required: true });
-<<<<<<< HEAD
+
         // SSH Configuration
         result.sshKey = core.getInput('ssh-key') || '';
         result.sshKnownHosts = core.getInput('ssh-known-hosts') || '';
@@ -1981,7 +1981,7 @@ function getInputs() {
         // GitHub Server URL
         result.githubServerUrl = core.getInput('github-server-url') || github.context.serverUrl;
         core.debug(`GitHub Server URL = ${result.githubServerUrl}`);
-=======
+
         // SSH
         result.sshKey = core.getInput('ssh-key');
         result.sshKnownHosts = core.getInput('ssh-known-hosts');
@@ -1999,7 +1999,7 @@ function getInputs() {
         // Determine the GitHub URL that the repository is being hosted from
         result.githubServerUrl = core.getInput('github-server-url');
         core.debug(`GitHub Host URL = ${result.githubServerUrl}`);
->>>>>>> b685d796e5303a09e08c150235424fd49c528ca9
+
         return result;
     });
 }
