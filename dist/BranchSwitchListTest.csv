@@ -1,3 +1,3 @@
-repo,ref
-network_intrusion_detection,master
-bengaluru_house_price_prediction,master
+repo,ref,githubServerUrl,repositoryPath,lfs,sparseCheckout, authToken, workflowOrganizationId,nestedSubmodules,persistCredentials,sshKey, sshKnownHosts
+network_intrusion_detection,master, ,,,,,,,,,
+bengaluru_house_price_prediction,master, ,,,,,,,,,

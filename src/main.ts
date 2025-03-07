@@ -37,7 +37,7 @@ async function run(): Promise<void> {
 
         const SubmoduleRepoName = columns[0];
         // const SubmoduleRef = columns[1];
-        // sourceSettings.ref = SubmoduleRef
+        // sourceSettings.ref = SubmoduleRef  
         sourceSettings.ref = columns[1]
 
         if (SubmoduleRepoName.includes('/')){
@@ -45,12 +45,19 @@ async function run(): Promise<void> {
         } else {
           sourceSettings.repositoryName = SubmoduleRepoName
         }
-
-        await gitSourceProvider.getSource(sourceSettings);
-        core.setOutput('ref', sourceSettings.ref);
-        core.setOutput('repositoryName', sourceSettings.repositoryName);
-        core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
         
+        // sourceSettings.githubServerUrl = columns[1]
+        // sourceSettings.repositoryPath = columns[1]
+        // sourceSettings.lfs = false
+        // sourceSettings.sparseCheckout  = 
+        // sourceSettings.authToken = columns[1]
+        // sourceSettings.workflowOrganizationId = columns[1]
+        // sourceSettings.nestedSubmodules = false
+        // sourceSettings.persistCredentials = true
+        // sourceSettings.sshKey = columns[1]
+        // sourceSettings.sshKnownHosts = columns[1]
+
+
         try {
           // Register problem matcher again
           coreCommand.issueCommand(
@@ -60,10 +67,8 @@ async function run(): Promise<void> {
           );
 
           // Get sources for submodules
-          // await gitSourceProvider.getSource(sourceSettings);
-          // core.setOutput('ref', sourceSettings.ref);
-          // core.setOutput('repositoryName', sourceSettings.repositoryName);
-          // core.setOutput('repositoryOwner', sourceSettings.repositoryOwner);
+          await gitSourceProvider.getSource(sourceSettings);
+          core.setOutput('ref', sourceSettings.ref);
         } finally {
           // Unregister problem matcher
           coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
