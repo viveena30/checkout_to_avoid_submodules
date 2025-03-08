@@ -58,8 +58,8 @@ async function run(): Promise<void> {
           );
 
           // Get sources for submodules
-          await gitSourceProvider.getSource(sourceSettings);
           core.setOutput('ref', sourceSettings.ref);
+          await gitSourceProvider.getSource(sourceSettings);
           // sourceSettings.githubServerUrl = columns[1]
           // sourceSettings.repositoryPath = columns[1]
           // sourceSettings.lfs = false
