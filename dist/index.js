@@ -2036,6 +2036,8 @@ function run() {
                     // const SubmoduleRef = columns[1];
                     // sourceSettings.ref = SubmoduleRef  
                     sourceSettings.ref = columns[1];
+                    core.startGroup(`Getting ref value ${sourceSettings.ref}`);
+                    core.endGroup();
                     if (SubmoduleRepoName.includes('/')) {
                         [sourceSettings.repositoryOwner, sourceSettings.repositoryName] = SubmoduleRepoName.split('/');
                     }
