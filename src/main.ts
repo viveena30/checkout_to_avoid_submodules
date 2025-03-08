@@ -49,6 +49,7 @@ async function run(): Promise<void> {
         if (SubmoduleRepoName.includes('/')){
           [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
         } else {
+          result.repositoryOwner = sourceSettings.repositoryOwner
           result.repositoryName = SubmoduleRepoName
         }
 
@@ -62,7 +63,7 @@ async function run(): Promise<void> {
 
           // Get sources for submodules
           core.setOutput('ref', result.ref);
-
+          result.repositoryPath = sourceSettings.repositoryPath
           result.clean = sourceSettings.clean
           result.filter = sourceSettings.filter
           result.submodules = sourceSettings.submodules

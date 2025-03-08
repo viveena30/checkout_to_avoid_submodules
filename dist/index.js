@@ -1889,9 +1889,9 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        // }
+        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
@@ -2043,6 +2043,7 @@ function run() {
                         [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
                     }
                     else {
+                        result.repositoryOwner = sourceSettings.repositoryOwner;
                         result.repositoryName = SubmoduleRepoName;
                     }
                     try {
@@ -2050,6 +2051,7 @@ function run() {
                         coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
                         // Get sources for submodules
                         core.setOutput('ref', result.ref);
+                        result.repositoryPath = sourceSettings.repositoryPath;
                         result.clean = sourceSettings.clean;
                         result.filter = sourceSettings.filter;
                         result.submodules = sourceSettings.submodules;
