@@ -1889,9 +1889,9 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        // }
+        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
@@ -2029,27 +2029,33 @@ function run() {
                 const csvContent = fs.readFileSync(csvFilePath, 'utf8');
                 const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
                 for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
+                    const result = {};
                     const columns = rows[i].split(',').map(col => col.trim());
                     if (columns.length < 2)
                         continue; // Skip invalid rows
                     const SubmoduleRepoName = columns[0];
                     // const SubmoduleRef = columns[1];
                     // sourceSettings.ref = SubmoduleRef  
-                    sourceSettings.ref = columns[1];
-                    core.startGroup(`Getting ref value ${sourceSettings.ref}`);
+                    result.ref = columns[1];
+                    core.startGroup(`Getting ref value ${result.ref}`);
                     core.endGroup();
                     if (SubmoduleRepoName.includes('/')) {
-                        [sourceSettings.repositoryOwner, sourceSettings.repositoryName] = SubmoduleRepoName.split('/');
+                        [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
                     }
                     else {
-                        sourceSettings.repositoryName = SubmoduleRepoName;
+                        result.repositoryName = SubmoduleRepoName;
                     }
                     try {
                         // Register problem matcher again
                         coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
                         // Get sources for submodules
-                        core.setOutput('ref', sourceSettings.ref);
-                        yield gitSourceProvider.getSource(sourceSettings);
+                        core.setOutput('ref', result.ref);
+                        result.clean = sourceSettings.clean;
+                        result.filter = sourceSettings.filter;
+                        result.submodules = sourceSettings.submodules;
+                        result.authToken = sourceSettings.authToken;
+                        result.setSafeDirectory = sourceSettings.setSafeDirectory;
+                        yield gitSourceProvider.getSource(result);
                         // sourceSettings.githubServerUrl = columns[1]
                         // sourceSettings.repositoryPath = columns[1]
                         // sourceSettings.lfs = false

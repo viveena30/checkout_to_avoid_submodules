@@ -5,6 +5,7 @@ import * as inputHelper from './input-helper';
 import * as path from 'path';
 import * as stateHelper from './state-helper';
 import * as fs from 'fs';
+import {IGitSourceSettings} from './git-source-settings'
 
 async function run(): Promise<void> {
   try {
@@ -30,25 +31,25 @@ async function run(): Promise<void> {
       const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
       const csvContent = fs.readFileSync(csvFilePath, 'utf8');
       const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
-      const result = {} as IGitSourceSettings
 
       
       for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
+        const result = {} as IGitSourceSettings
         const columns = rows[i].split(',').map(col => col.trim());
         if (columns.length < 2) continue; // Skip invalid rows
 
         const SubmoduleRepoName = columns[0];
         // const SubmoduleRef = columns[1];
         // sourceSettings.ref = SubmoduleRef  
-        sourceSettings.ref = columns[1]
+        result.ref = columns[1]
 
-        core.startGroup(`Getting ref value ${sourceSettings.ref}`)
+        core.startGroup(`Getting ref value ${result.ref}`)
         core.endGroup()
 
         if (SubmoduleRepoName.includes('/')){
-          [sourceSettings.repositoryOwner, sourceSettings.repositoryName] = SubmoduleRepoName.split('/');
+          [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
         } else {
-          sourceSettings.repositoryName = SubmoduleRepoName
+          result.repositoryName = SubmoduleRepoName
         }
 
         try {
@@ -60,8 +61,15 @@ async function run(): Promise<void> {
           );
 
           // Get sources for submodules
-          core.setOutput('ref', sourceSettings.ref);
-          await gitSourceProvider.getSource(sourceSettings);
+          core.setOutput('ref', result.ref);
+
+          result.clean = sourceSettings.clean
+          result.filter = sourceSettings.filter
+          result.submodules = sourceSettings.submodules
+          result.authToken = sourceSettings.authToken
+          result.setSafeDirectory = sourceSettings.setSafeDirectory
+
+          await gitSourceProvider.getSource(result);
           // sourceSettings.githubServerUrl = columns[1]
           // sourceSettings.repositoryPath = columns[1]
           // sourceSettings.lfs = false
