@@ -30,7 +30,9 @@ async function run(): Promise<void> {
       const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
       const csvContent = fs.readFileSync(csvFilePath, 'utf8');
       const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+      const result = {} as IGitSourceSettings
 
+      
       for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
         const columns = rows[i].split(',').map(col => col.trim());
         if (columns.length < 2) continue; // Skip invalid rows
