@@ -2042,16 +2042,16 @@ function run() {
                     else {
                         sourceSettings.repositoryName = SubmoduleRepoName;
                     }
-                    // sourceSettings.githubServerUrl = columns[1]
-                    // sourceSettings.repositoryPath = columns[1]
-                    // sourceSettings.lfs = false
-                    // sourceSettings.sparseCheckout  = 
-                    // sourceSettings.authToken = columns[1]
+                    sourceSettings.githubServerUrl = columns[1];
+                    sourceSettings.repositoryPath = columns[1];
+                    sourceSettings.lfs = false;
+                    sourceSettings.sparseCheckout = null;
+                    sourceSettings.authToken = columns[1];
                     // sourceSettings.workflowOrganizationId = columns[1]
-                    // sourceSettings.nestedSubmodules = false
-                    // sourceSettings.persistCredentials = true
-                    // sourceSettings.sshKey = columns[1]
-                    // sourceSettings.sshKnownHosts = columns[1]
+                    sourceSettings.nestedSubmodules = false;
+                    sourceSettings.persistCredentials = true;
+                    sourceSettings.sshKey = columns[1];
+                    sourceSettings.sshKnownHosts = columns[1];
                     try {
                         // Register problem matcher again
                         coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
