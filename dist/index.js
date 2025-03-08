@@ -2051,7 +2051,8 @@ function run() {
                         coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
                         // Get sources for submodules
                         core.setOutput('ref', result.ref);
-                        result.repositoryPath = sourceSettings.repositoryPath;
+                        // result.repositoryPath = sourceSettings.repositoryPath
+                        result.repositoryPath = './';
                         result.clean = sourceSettings.clean;
                         result.filter = sourceSettings.filter;
                         result.submodules = sourceSettings.submodules;

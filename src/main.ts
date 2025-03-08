@@ -63,7 +63,8 @@ async function run(): Promise<void> {
 
           // Get sources for submodules
           core.setOutput('ref', result.ref);
-          result.repositoryPath = sourceSettings.repositoryPath
+          // result.repositoryPath = sourceSettings.repositoryPath
+          result.repositoryPath = './'
           result.clean = sourceSettings.clean
           result.filter = sourceSettings.filter
           result.submodules = sourceSettings.submodules
