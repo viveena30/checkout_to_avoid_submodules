@@ -1889,9 +1889,9 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        // }
+        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
@@ -2007,67 +2007,65 @@ const inputHelper = __importStar(__nccwpck_require__(5480));
 const path = __importStar(__nccwpck_require__(1017));
 const stateHelper = __importStar(__nccwpck_require__(4866));
 const fs = __importStar(__nccwpck_require__(7147));
-function run(i, rows) {
+function run() {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
         try {
             const sourceSettings = yield inputHelper.getInputs();
-            // try {
-            //   // Register problem matcher
-            //   coreCommand.issueCommand(
-            //     'add-matcher',
-            //     {},
-            //     path.join(__dirname, 'problem-matcher.json')
-            //   );
-            //   // Get main sources
-            //   await gitSourceProvider.getSource(sourceSettings);
-            //   core.setOutput('ref', sourceSettings.ref);
-            // } finally {
-            //   // Unregister problem matcher
-            //   coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
-            // }
-            // Check if submodulesCSV exists and process submodules
-            // if (sourceSettings.submodulesCSV) {
-            const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
-            const csvContent = fs.readFileSync(csvFilePath, 'utf8');
-            const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
-            // for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
-            const result = {};
-            const columns = rows[i].split(',').map(col => col.trim());
-            // if (columns.length < 2) return; // Skip invalid rows and end if input values missing
-            const SubmoduleRepoName = columns[0];
-            // const SubmoduleRef = columns[1];
-            // sourceSettings.ref = SubmoduleRef  
-            result.ref = columns[1];
-            core.startGroup(`Getting ref value ${result.ref}`);
-            core.endGroup();
-            if (SubmoduleRepoName.includes('/')) {
-                [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
-            }
-            else {
-                result.repositoryOwner = sourceSettings.repositoryOwner;
-                result.repositoryName = SubmoduleRepoName;
-            }
             try {
-                // Register problem matcher again
+                // Register problem matcher
                 coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
-                // Get sources for submodules
-                core.setOutput('ref', result.ref);
-                // result.repositoryPath = sourceSettings.repositoryPath
-                result.repositoryPath = './';
-                result.clean = sourceSettings.clean;
-                result.filter = sourceSettings.filter;
-                result.submodules = sourceSettings.submodules;
-                result.authToken = sourceSettings.authToken;
-                result.setSafeDirectory = sourceSettings.setSafeDirectory;
-                yield gitSourceProvider.getSource(result);
+                // Get main sources
+                yield gitSourceProvider.getSource(sourceSettings);
+                core.setOutput('ref', sourceSettings.ref);
             }
             finally {
                 // Unregister problem matcher
                 coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
             }
-            // }
-            // }
+            // Check if submodulesCSV exists and process submodules
+            if (sourceSettings.submodulesCSV) {
+                const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
+                const csvContent = fs.readFileSync(csvFilePath, 'utf8');
+                const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+                for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
+                    const result = {};
+                    const columns = rows[i].split(',').map(col => col.trim());
+                    if (columns.length < 2)
+                        continue; // Skip invalid rows
+                    const SubmoduleRepoName = columns[0];
+                    // const SubmoduleRef = columns[1];
+                    // sourceSettings.ref = SubmoduleRef  
+                    result.ref = columns[1];
+                    core.startGroup(`Getting ref value ${result.ref}`);
+                    core.endGroup();
+                    if (SubmoduleRepoName.includes('/')) {
+                        [result.repositoryOwner, result.repositoryName] = SubmoduleRepoName.split('/');
+                    }
+                    else {
+                        result.repositoryOwner = sourceSettings.repositoryOwner;
+                        result.repositoryName = SubmoduleRepoName;
+                    }
+                    try {
+                        // Register problem matcher again
+                        coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
+                        // Get sources for submodules
+                        core.setOutput('ref', result.ref);
+                        // result.repositoryPath = sourceSettings.repositoryPath
+                        result.repositoryPath = './';
+                        result.clean = sourceSettings.clean;
+                        result.filter = sourceSettings.filter;
+                        result.submodules = sourceSettings.submodules;
+                        result.authToken = sourceSettings.authToken;
+                        result.setSafeDirectory = sourceSettings.setSafeDirectory;
+                        yield gitSourceProvider.getSource(result);
+                    }
+                    finally {
+                        // Unregister problem matcher
+                        coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
+                    }
+                }
+            }
         }
         catch (error) {
             core.setFailed(`${(_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error}`);
@@ -2087,12 +2085,7 @@ function cleanup() {
 }
 // Main
 if (!stateHelper.IsPost) {
-    const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
-    const csvContent = fs.readFileSync(csvFilePath, 'utf8');
-    const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
-    for (let i = 1; i < rows.length; i++) {
-        run(i, rows);
-    }
+    run();
 }
 else {
     cleanup();
