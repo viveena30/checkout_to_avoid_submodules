@@ -10,24 +10,24 @@ import {IGitSourceSettings} from './git-source-settings'
 async function run(): Promise<void> {
   try {
     const sourceSettings = await inputHelper.getInputs();
-    try {
-      // Register problem matcher
-      coreCommand.issueCommand(
-        'add-matcher',
-        {},
-        path.join(__dirname, 'problem-matcher.json')
-      );
+    // try {
+    //   // Register problem matcher
+    //   coreCommand.issueCommand(
+    //     'add-matcher',
+    //     {},
+    //     path.join(__dirname, 'problem-matcher.json')
+    //   );
 
-      // Get main sources
-      await gitSourceProvider.getSource(sourceSettings);
-      core.setOutput('ref', sourceSettings.ref);
-    } finally {
-      // Unregister problem matcher
-      coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
-    }
+    //   // Get main sources
+    //   await gitSourceProvider.getSource(sourceSettings);
+    //   core.setOutput('ref', sourceSettings.ref);
+    // } finally {
+    //   // Unregister problem matcher
+    //   coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
+    // }
 
     // Check if submodulesCSV exists and process submodules
-    if (sourceSettings.submodulesCSV) {
+    // if (sourceSettings.submodulesCSV) {
       const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
       const csvContent = fs.readFileSync(csvFilePath, 'utf8');
       const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
@@ -72,23 +72,13 @@ async function run(): Promise<void> {
           result.setSafeDirectory = sourceSettings.setSafeDirectory
 
           await gitSourceProvider.getSource(result);
-          // sourceSettings.githubServerUrl = columns[1]
-          // sourceSettings.repositoryPath = columns[1]
-          // sourceSettings.lfs = false
-          // sourceSettings.sparseCheckout  = null
-          // sourceSettings.authToken = columns[1]
-          // // sourceSettings.workflowOrganizationId = columns[1]
-          // sourceSettings.nestedSubmodules = false
-          // sourceSettings.persistCredentials = true
-          // sourceSettings.sshKey = columns[1]
-          // sourceSettings.sshKnownHosts = columns[1]
   
         } finally {
           // Unregister problem matcher
           coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
         }
       }
-    }
+    // }
   } catch (error) {
     core.setFailed(`${(error as any)?.message ?? error}`);
   }
