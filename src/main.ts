@@ -7,7 +7,7 @@ import * as stateHelper from './state-helper';
 import * as fs from 'fs';
 import {IGitSourceSettings} from './git-source-settings'
 
-async function run(): Promise<void> {
+async function run(i: number, rows: string[]): Promise<void> {
   try {
     const sourceSettings = await inputHelper.getInputs();
     // try {
@@ -33,10 +33,10 @@ async function run(): Promise<void> {
       const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
 
       
-      for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
+      // for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
         const result = {} as IGitSourceSettings
         const columns = rows[i].split(',').map(col => col.trim());
-        if (columns.length < 2) continue; // Skip invalid rows
+        // if (columns.length < 2) return; // Skip invalid rows and end if input values missing
 
         const SubmoduleRepoName = columns[0];
         // const SubmoduleRef = columns[1];
@@ -77,7 +77,7 @@ async function run(): Promise<void> {
           // Unregister problem matcher
           coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
         }
-      }
+      // }
     // }
   } catch (error) {
     core.setFailed(`${(error as any)?.message ?? error}`);
@@ -94,7 +94,12 @@ async function cleanup(): Promise<void> {
 
 // Main
 if (!stateHelper.IsPost) {
-  run();
+  const csvFilePath = 'BranchSwitchListTest.csv'; // Path to CSV file
+  const csvContent = fs.readFileSync(csvFilePath, 'utf8');
+  const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+  for (let i = 1; i < rows.length; i++) {
+    run(i, rows);
+  }
 } else {
   cleanup();
 }
