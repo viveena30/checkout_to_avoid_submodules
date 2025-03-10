@@ -116,7 +116,7 @@ async function run(sourceSettings: IGitSourceSettings): Promise<void> {
 
     // Get main sources
     await gitSourceProvider.getSource(sourceSettings);
-    core.setOutput('ref', sourceSettings.ref);
+    // core.setOutput('ref', sourceSettings.ref);
 
   } catch (error) {
     core.setFailed(`${(error as any)?.message ?? error}`);

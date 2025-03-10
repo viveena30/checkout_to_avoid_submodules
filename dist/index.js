@@ -1889,9 +1889,9 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        // }
+        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
@@ -2101,7 +2101,7 @@ function run(sourceSettings) {
             coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
             // Get main sources
             yield gitSourceProvider.getSource(sourceSettings);
-            core.setOutput('ref', sourceSettings.ref);
+            // core.setOutput('ref', sourceSettings.ref);
         }
         catch (error) {
             core.setFailed(`${(_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error}`);
