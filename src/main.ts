@@ -145,6 +145,13 @@ async function processCSVAndRun(): Promise<void> {
         const result = sourceSettings;
           
         result.ref = submoduleRef;
+        core.setOutput('ref', result.ref);
+        // result.repositoryPath = sourceSettings.repositoryPath
+        result.clean = sourceSettings.clean
+        result.filter = sourceSettings.filter
+        result.submodules = sourceSettings.submodules
+        result.authToken = sourceSettings.authToken
+        result.setSafeDirectory = sourceSettings.setSafeDirectory
         result.repositoryPath = './',
         result.repositoryOwner = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[0] : sourceSettings.repositoryOwner,
         result.repositoryName = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[1] : submoduleRepoName
