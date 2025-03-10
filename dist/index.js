@@ -2127,8 +2127,13 @@ function processCSVAndRun() {
                         continue;
                     const submoduleRepoName = columns[0];
                     const submoduleRef = columns[1];
-                    const result = Object.assign(Object.assign({}, sourceSettings), { ref: submoduleRef, repositoryPath: './', repositoryOwner: submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[0] : sourceSettings.repositoryOwner, repositoryName: submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[1] : submoduleRepoName });
+                    const result = sourceSettings;
+                    result.ref = submoduleRef;
+                    result.repositoryPath = './',
+                        result.repositoryOwner = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[0] : sourceSettings.repositoryOwner,
+                        result.repositoryName = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[1] : submoduleRepoName;
                     core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
+                    core.setOutput('ref', result.ref);
                     yield run(result);
                     core.endGroup();
                 }
