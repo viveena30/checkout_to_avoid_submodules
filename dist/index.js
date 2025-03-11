@@ -745,7 +745,8 @@ class GitCommandManager {
     }
     remoteAdd(remoteName, remoteUrl) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.execGit(['remote', 'add', remoteName, remoteUrl]);
+            // await this.execGit(['remote', 'add', remoteName, remoteUrl])
+            yield this.execGit(['remote', 'set-url', remoteName, remoteUrl]);
         });
     }
     removeEnvironmentVariable(name) {
@@ -1889,9 +1890,9 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        // }
+        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
