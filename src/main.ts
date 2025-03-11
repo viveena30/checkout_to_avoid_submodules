@@ -178,10 +178,8 @@ async function cleanup(): Promise<void> {
 }
 
 // Main
-for (let i = 0; i < 3; i++){
-  if (!stateHelper.IsPost) {
-    processCSVAndRun();
-  } else {
-    cleanup();
-  }
+if (!stateHelper.IsPost) {
+  processCSVAndRun();
+} else {
+  cleanup();
 }
