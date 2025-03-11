@@ -130,9 +130,9 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
       authHelper = gitAuthHelper.createAuthHelper(git, settings)
     }
     // Configure auth
-    core.startGroup('Setting up auth')
-    await authHelper.configureAuth()
-    core.endGroup()
+    // core.startGroup('Setting up auth')
+    // await authHelper.configureAuth()
+    // core.endGroup()
 
     // Determine the default branch
     if (!settings.ref && !settings.commit) {

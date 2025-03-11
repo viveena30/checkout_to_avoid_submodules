@@ -1252,9 +1252,9 @@ function getSource(settings) {
                 authHelper = gitAuthHelper.createAuthHelper(git, settings);
             }
             // Configure auth
-            core.startGroup('Setting up auth');
-            yield authHelper.configureAuth();
-            core.endGroup();
+            // core.startGroup('Setting up auth')
+            // await authHelper.configureAuth()
+            // core.endGroup()
             // Determine the default branch
             if (!settings.ref && !settings.commit) {
                 core.startGroup('Determining the default branch');
