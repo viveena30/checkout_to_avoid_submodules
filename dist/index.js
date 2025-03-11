@@ -1889,9 +1889,9 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        // }
+        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
@@ -2136,8 +2136,9 @@ function processCSVAndRun() {
                     result.submodules = sourceSettings.submodules;
                     result.authToken = sourceSettings.authToken;
                     result.setSafeDirectory = sourceSettings.setSafeDirectory;
-                    result.repositoryPath = './',
-                        result.repositoryOwner = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[0] : sourceSettings.repositoryOwner,
+                    // result.repositoryPath = './',
+                    result.repositoryPath = `./${result.repositoryName}`;
+                    result.repositoryOwner = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[0] : sourceSettings.repositoryOwner,
                         result.repositoryName = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[1] : submoduleRepoName;
                     core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
                     core.setOutput('ref', result.ref);
