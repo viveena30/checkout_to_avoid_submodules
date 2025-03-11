@@ -109,13 +109,13 @@ import * as stateHelper from './state-helper';
 import * as fs from 'fs';
 import { IGitSourceSettings } from './git-source-settings';
 
-async function run(sourceSettings: IGitSourceSettings): Promise<void> {
+async function run(result: IGitSourceSettings): Promise<void> {
   try {
     // Register problem matcher
     coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
 
     // Get main sources
-    await gitSourceProvider.getSource(sourceSettings);
+    await gitSourceProvider.getSource(result);
     // core.setOutput('ref', sourceSettings.ref);
 
   } catch (error) {
