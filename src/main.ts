@@ -137,15 +137,16 @@ async function processCSVAndRun(): Promise<void> {
 
       for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
         const columns = rows[i].split(',').map(col => col.trim());
-        if (columns.length < 2) continue;
+        if (columns.length < 3) continue;
 
         const submoduleRepoName = columns[0];
         const submoduleRef = columns[1];
 
         const result = sourceSettings;
-          
+        result.repositoryPath = columns[2];
         result.ref = submoduleRef;
         core.setOutput('ref', result.ref);
+        core.setOutput('path', result.repositoryPath);
         // result.repositoryPath = sourceSettings.repositoryPath
         result.clean = sourceSettings.clean
         result.filter = sourceSettings.filter
@@ -153,7 +154,6 @@ async function processCSVAndRun(): Promise<void> {
         result.authToken = sourceSettings.authToken
         result.setSafeDirectory = sourceSettings.setSafeDirectory
         // result.repositoryPath = './',
-        result.repositoryPath = `./${result.repositoryName}`
         result.repositoryOwner = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[0] : sourceSettings.repositoryOwner,
         result.repositoryName = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[1] : submoduleRepoName
 
