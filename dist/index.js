@@ -1788,10 +1788,10 @@ function processCSVAndRun() {
                     if (columns.length < 3)
                         continue;
                     const submoduleRepoName = columns[0];
-                    const submoduleRef = columns[1];
+                    // const submoduleRef = columns[1];
                     const result = sourceSettings;
+                    result.ref = columns[1];
                     result.repositoryPath = columns[2];
-                    result.ref = submoduleRef;
                     core.setOutput('ref', result.ref);
                     core.setOutput('path', result.repositoryPath);
                     // result.repositoryPath = sourceSettings.repositoryPath
