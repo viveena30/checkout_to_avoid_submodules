@@ -2031,7 +2031,7 @@ function run() {
                 for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
                     const result = {};
                     const columns = rows[i].split(',').map(col => col.trim());
-                    if (columns.length < 2)
+                    if (columns.length < 3)
                         continue; // Skip invalid rows
                     const SubmoduleRepoName = columns[0];
                     // const SubmoduleRef = columns[1];
@@ -2052,7 +2052,8 @@ function run() {
                         // Get sources for submodules
                         core.setOutput('ref', result.ref);
                         // result.repositoryPath = sourceSettings.repositoryPath
-                        result.repositoryPath = './';
+                        result.repositoryPath = columns[2];
+                        core.setOutput('repositoryPath', result.repositoryPath);
                         result.clean = sourceSettings.clean;
                         result.filter = sourceSettings.filter;
                         result.submodules = sourceSettings.submodules;
