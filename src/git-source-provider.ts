@@ -170,16 +170,16 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
 
     if (settings.fetchDepth <= 0) {
       // Fetch all branches and tags
-      let refSpec = refHelper.getRefSpecForAllHistory(
-        settings.ref,
-        settings.commit
-      )
-      await git.fetch(refSpec, fetchOptions)
+      // let refSpec = refHelper.getRefSpecForAllHistory(
+      //   settings.ref,
+      //   settings.commit
+      // )
+      // await git.fetch(refSpec, fetchOptions)
 
       // When all history is fetched, the ref we're interested in may have moved to a different
       // commit (push or force push). If so, fetch again with a targeted refspec.
       if (!(await refHelper.testRef(git, settings.ref, settings.commit))) {
-        refSpec = refHelper.getRefSpec(settings.ref, settings.commit)
+        let refSpec = refHelper.getRefSpec(settings.ref, settings.commit)
         await git.fetch(refSpec, fetchOptions)
       }
     } else {
@@ -188,6 +188,7 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
       const refSpec = refHelper.getRefSpec(settings.ref, settings.commit)
       await git.fetch(refSpec, fetchOptions)
     }
+
     core.endGroup()
 
     // Checkout info
