@@ -1806,7 +1806,7 @@ function run(result) {
             coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
             // Get main sources
             core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
-            // core.setOutput('ref', result.ref);
+            core.setOutput('ref', result.ref);
             // core.setOutput('path', result.repositoryPath);
             yield gitSourceProvider.getSource(result);
             core.endGroup();

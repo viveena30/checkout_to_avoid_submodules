@@ -156,7 +156,7 @@ async function run(result: IGitSourceSettings): Promise<void> {
     // Get main sources
     
     core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
-    // core.setOutput('ref', result.ref);
+    core.setOutput('ref', result.ref);
     // core.setOutput('path', result.repositoryPath);
     await gitSourceProvider.getSource(result);
     core.endGroup();
