@@ -32,17 +32,19 @@ async function run(): Promise<void> {
       const csvContent = fs.readFileSync(csvFilePath, 'utf8');
       const rows = csvContent.split('\n').map(row => row.trim()).filter(row => row.length > 0);
 
-      
       for (let i = 1; i < rows.length; i++) { // Assuming first row is a header
         const result = {} as IGitSourceSettings
-        const columns = rows[i].split(',').map(col => col.trim());
-        if (columns.length < 2) continue; // Skip invalid rows
+        // const columns = rows[i].split(',').map(col => col.trim());
+        const columns = rows[i].split(',').map((col: string) => col.trim());
+        if (columns.length < 3) {
+          continue; // Skip invalid rows 
+        } 
 
         const SubmoduleRepoName = columns[0];
         // const SubmoduleRef = columns[1];
         // sourceSettings.ref = SubmoduleRef  
         result.ref = columns[1]
-
+        result.repositoryPath = columns[2]
         core.startGroup(`Getting ref value ${result.ref}`)
         core.endGroup()
 
@@ -52,6 +54,7 @@ async function run(): Promise<void> {
           result.repositoryOwner = sourceSettings.repositoryOwner
           result.repositoryName = SubmoduleRepoName
         }
+
 
         try {
           // Register problem matcher again
@@ -64,7 +67,7 @@ async function run(): Promise<void> {
           // Get sources for submodules
           core.setOutput('ref', result.ref);
           // result.repositoryPath = sourceSettings.repositoryPath
-          result.repositoryPath = './'
+
           result.clean = sourceSettings.clean
           result.filter = sourceSettings.filter
           result.submodules = sourceSettings.submodules
