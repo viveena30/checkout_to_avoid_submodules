@@ -137,11 +137,11 @@ async function processCSVAndRun(): Promise<void> {
         result.repositoryOwner = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[0] : sourceSettings.repositoryOwner,
         result.repositoryName = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[1] : submoduleRepoName
 
-        core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
-        core.setOutput('ref', result.ref);
-        core.setOutput('path', result.repositoryPath);
+        // core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
+        // core.setOutput('ref', result.ref);
+        // core.setOutput('path', result.repositoryPath);
         await run(result);
-        core.endGroup();
+        // core.endGroup();
       }
     }
   } catch (error) {
@@ -153,11 +153,14 @@ async function run(result: IGitSourceSettings): Promise<void> {
   try {
     // Register problem matcher
     coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
-    core.setOutput('ref', result.ref);
-    core.setOutput('path', result.repositoryPath);
     // Get main sources
+    
+    core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
+    // core.setOutput('ref', result.ref);
+    // core.setOutput('path', result.repositoryPath);
     await gitSourceProvider.getSource(result);
-    // core.setOutput('ref', sourceSettings.ref);
+    core.endGroup();
+
 
   } catch (error) {
     core.setFailed(`${(error as any)?.message ?? error}`);
