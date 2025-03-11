@@ -43,11 +43,11 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
   let authHelper: gitAuthHelper.IGitAuthHelper | null = null
   try {
     if (git) {
-      authHelper = gitAuthHelper.createAuthHelper(git, settings)
+      // authHelper = gitAuthHelper.createAuthHelper(git, settings)
       if (settings.setSafeDirectory) {
         // Setup the repository path as a safe directory, so if we pass this into a container job with a different user it doesn't fail
         // Otherwise all git commands we run in a container fail
-        await authHelper.configureTempGlobalConfig()
+        // await authHelper.configureTempGlobalConfig()
         core.info(
           `Adding repository directory to the temporary git global config as a safe directory`
         )
@@ -126,13 +126,11 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
     core.endGroup()
 
     // If we didn't initialize it above, do it now
-    if (!authHelper) {
-      authHelper = gitAuthHelper.createAuthHelper(git, settings)
-    }
+    // if (!authHelper) {
+    //   authHelper = gitAuthHelper.createAuthHelper(git, settings)
+    // }
     // Configure auth
-    // core.startGroup('Setting up auth')
-    // await authHelper.configureAuth()
-    // core.endGroup()
+
 
     // Determine the default branch
     if (!settings.ref && !settings.commit) {
@@ -237,7 +235,7 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
     if (settings.submodules) {
       // Temporarily override global config
       core.startGroup('Setting up auth for fetching submodules')
-      await authHelper.configureGlobalAuth()
+      // await authHelper.configureGlobalAuth()
       core.endGroup()
 
       // Checkout submodules
@@ -253,7 +251,7 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
       // Persist credentials
       if (settings.persistCredentials) {
         core.startGroup('Persisting credentials for submodules')
-        await authHelper.configureSubmoduleAuth()
+        // await authHelper.configureSubmoduleAuth()
         core.endGroup()
       }
     }
@@ -280,10 +278,10 @@ export async function getSource(settings: IGitSourceSettings): Promise<void> {
     if (authHelper) {
       if (!settings.persistCredentials) {
         core.startGroup('Removing auth')
-        await authHelper.removeAuth()
+        // await authHelper.removeAuth()
         core.endGroup()
       }
-      authHelper.removeGlobalConfig()
+      // authHelper.removeGlobalConfig()
     }
   }
 }
@@ -309,12 +307,12 @@ export async function cleanup(repositoryPath: string): Promise<void> {
   }
 
   // Remove auth
-  const authHelper = gitAuthHelper.createAuthHelper(git)
+  // const authHelper = gitAuthHelper.createAuthHelper(git)
   try {
     if (stateHelper.PostSetSafeDirectory) {
       // Setup the repository path as a safe directory, so if we pass this into a container job with a different user it doesn't fail
       // Otherwise all git commands we run in a container fail
-      await authHelper.configureTempGlobalConfig()
+      // await authHelper.configureTempGlobalConfig()
       core.info(
         `Adding repository directory to the temporary git global config as a safe directory`
       )
@@ -326,9 +324,11 @@ export async function cleanup(repositoryPath: string): Promise<void> {
         })
     }
 
-    await authHelper.removeAuth()
+    // await authHelper.removeAuth()
   } finally {
-    await authHelper.removeGlobalConfig()
+    core.info(
+      `completedddddddddddddddddddddddddddddddddddddddddddd`
+    )
   }
 }
 

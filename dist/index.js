@@ -100,341 +100,6 @@ function fileExistsSync(path) {
 
 /***/ }),
 
-/***/ 2565:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createAuthHelper = createAuthHelper;
-const assert = __importStar(__nccwpck_require__(9491));
-const core = __importStar(__nccwpck_require__(2186));
-const exec = __importStar(__nccwpck_require__(1514));
-const fs = __importStar(__nccwpck_require__(7147));
-const io = __importStar(__nccwpck_require__(7436));
-const os = __importStar(__nccwpck_require__(2037));
-const path = __importStar(__nccwpck_require__(1017));
-const regexpHelper = __importStar(__nccwpck_require__(3120));
-const stateHelper = __importStar(__nccwpck_require__(4866));
-const urlHelper = __importStar(__nccwpck_require__(9437));
-const uuid_1 = __nccwpck_require__(5840);
-const IS_WINDOWS = process.platform === 'win32';
-const SSH_COMMAND_KEY = 'core.sshCommand';
-function createAuthHelper(git, settings) {
-    return new GitAuthHelper(git, settings);
-}
-class GitAuthHelper {
-    constructor(gitCommandManager, gitSourceSettings) {
-        this.insteadOfValues = [];
-        this.sshCommand = '';
-        this.sshKeyPath = '';
-        this.sshKnownHostsPath = '';
-        this.temporaryHomePath = '';
-        this.git = gitCommandManager;
-        this.settings = gitSourceSettings || {};
-        // Token auth header
-        const serverUrl = urlHelper.getServerUrl(this.settings.githubServerUrl);
-        this.tokenConfigKey = `http.${serverUrl.origin}/.extraheader`; // "origin" is SCHEME://HOSTNAME[:PORT]
-        const basicCredential = Buffer.from(`x-access-token:${this.settings.authToken}`, 'utf8').toString('base64');
-        core.setSecret(basicCredential);
-        this.tokenPlaceholderConfigValue = `AUTHORIZATION: basic ***`;
-        this.tokenConfigValue = `AUTHORIZATION: basic ${basicCredential}`;
-        // Instead of SSH URL
-        this.insteadOfKey = `url.${serverUrl.origin}/.insteadOf`; // "origin" is SCHEME://HOSTNAME[:PORT]
-        this.insteadOfValues.push(`git@${serverUrl.hostname}:`);
-        if (this.settings.workflowOrganizationId) {
-            this.insteadOfValues.push(`org-${this.settings.workflowOrganizationId}@github.com:`);
-        }
-    }
-    configureAuth() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Remove possible previous values
-            yield this.removeAuth();
-            // Configure new values
-            yield this.configureSsh();
-            yield this.configureToken();
-        });
-    }
-    configureTempGlobalConfig() {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            // Already setup global config
-            if (((_a = this.temporaryHomePath) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                return path.join(this.temporaryHomePath, '.gitconfig');
-            }
-            // Create a temp home directory
-            const runnerTemp = process.env['RUNNER_TEMP'] || '';
-            assert.ok(runnerTemp, 'RUNNER_TEMP is not defined');
-            const uniqueId = (0, uuid_1.v4)();
-            this.temporaryHomePath = path.join(runnerTemp, uniqueId);
-            yield fs.promises.mkdir(this.temporaryHomePath, { recursive: true });
-            // Copy the global git config
-            const gitConfigPath = path.join(process.env['HOME'] || os.homedir(), '.gitconfig');
-            const newGitConfigPath = path.join(this.temporaryHomePath, '.gitconfig');
-            let configExists = false;
-            try {
-                yield fs.promises.stat(gitConfigPath);
-                configExists = true;
-            }
-            catch (err) {
-                if ((err === null || err === void 0 ? void 0 : err.code) !== 'ENOENT') {
-                    throw err;
-                }
-            }
-            if (configExists) {
-                core.info(`Copying '${gitConfigPath}' to '${newGitConfigPath}'`);
-                yield io.cp(gitConfigPath, newGitConfigPath);
-            }
-            else {
-                yield fs.promises.writeFile(newGitConfigPath, '');
-            }
-            // Override HOME
-            core.info(`Temporarily overriding HOME='${this.temporaryHomePath}' before making global git config changes`);
-            this.git.setEnvironmentVariable('HOME', this.temporaryHomePath);
-            return newGitConfigPath;
-        });
-    }
-    configureGlobalAuth() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // 'configureTempGlobalConfig' noops if already set, just returns the path
-            const newGitConfigPath = yield this.configureTempGlobalConfig();
-            try {
-                // Configure the token
-                yield this.configureToken(newGitConfigPath, true);
-                // Configure HTTPS instead of SSH
-                yield this.git.tryConfigUnset(this.insteadOfKey, true);
-                if (!this.settings.sshKey) {
-                    for (const insteadOfValue of this.insteadOfValues) {
-                        yield this.git.config(this.insteadOfKey, insteadOfValue, true, true);
-                    }
-                }
-            }
-            catch (err) {
-                // Unset in case somehow written to the real global config
-                core.info('Encountered an error when attempting to configure token. Attempting unconfigure.');
-                yield this.git.tryConfigUnset(this.tokenConfigKey, true);
-                throw err;
-            }
-        });
-    }
-    configureSubmoduleAuth() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Remove possible previous HTTPS instead of SSH
-            yield this.removeGitConfig(this.insteadOfKey, true);
-            if (this.settings.persistCredentials) {
-                // Configure a placeholder value. This approach avoids the credential being captured
-                // by process creation audit events, which are commonly logged. For more information,
-                // refer to https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/component-updates/command-line-process-auditing
-                const output = yield this.git.submoduleForeach(
-                // wrap the pipeline in quotes to make sure it's handled properly by submoduleForeach, rather than just the first part of the pipeline
-                `sh -c "git config --local '${this.tokenConfigKey}' '${this.tokenPlaceholderConfigValue}' && git config --local --show-origin --name-only --get-regexp remote.origin.url"`, this.settings.nestedSubmodules);
-                // Replace the placeholder
-                const configPaths = output.match(/(?<=(^|\n)file:)[^\t]+(?=\tremote\.origin\.url)/g) || [];
-                for (const configPath of configPaths) {
-                    core.debug(`Replacing token placeholder in '${configPath}'`);
-                    yield this.replaceTokenPlaceholder(configPath);
-                }
-                if (this.settings.sshKey) {
-                    // Configure core.sshCommand
-                    yield this.git.submoduleForeach(`git config --local '${SSH_COMMAND_KEY}' '${this.sshCommand}'`, this.settings.nestedSubmodules);
-                }
-                else {
-                    // Configure HTTPS instead of SSH
-                    for (const insteadOfValue of this.insteadOfValues) {
-                        yield this.git.submoduleForeach(`git config --local --add '${this.insteadOfKey}' '${insteadOfValue}'`, this.settings.nestedSubmodules);
-                    }
-                }
-            }
-        });
-    }
-    removeAuth() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.removeSsh();
-            yield this.removeToken();
-        });
-    }
-    removeGlobalConfig() {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            if (((_a = this.temporaryHomePath) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                core.debug(`Unsetting HOME override`);
-                this.git.removeEnvironmentVariable('HOME');
-                yield io.rmRF(this.temporaryHomePath);
-            }
-        });
-    }
-    configureSsh() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.settings.sshKey) {
-                return;
-            }
-            // Write key
-            const runnerTemp = process.env['RUNNER_TEMP'] || '';
-            assert.ok(runnerTemp, 'RUNNER_TEMP is not defined');
-            const uniqueId = (0, uuid_1.v4)();
-            this.sshKeyPath = path.join(runnerTemp, uniqueId);
-            stateHelper.setSshKeyPath(this.sshKeyPath);
-            yield fs.promises.mkdir(runnerTemp, { recursive: true });
-            yield fs.promises.writeFile(this.sshKeyPath, this.settings.sshKey.trim() + '\n', { mode: 0o600 });
-            // Remove inherited permissions on Windows
-            if (IS_WINDOWS) {
-                const icacls = yield io.which('icacls.exe');
-                yield exec.exec(`"${icacls}" "${this.sshKeyPath}" /grant:r "${process.env['USERDOMAIN']}\\${process.env['USERNAME']}:F"`);
-                yield exec.exec(`"${icacls}" "${this.sshKeyPath}" /inheritance:r`);
-            }
-            // Write known hosts
-            const userKnownHostsPath = path.join(os.homedir(), '.ssh', 'known_hosts');
-            let userKnownHosts = '';
-            try {
-                userKnownHosts = (yield fs.promises.readFile(userKnownHostsPath)).toString();
-            }
-            catch (err) {
-                if ((err === null || err === void 0 ? void 0 : err.code) !== 'ENOENT') {
-                    throw err;
-                }
-            }
-            let knownHosts = '';
-            if (userKnownHosts) {
-                knownHosts += `# Begin from ${userKnownHostsPath}\n${userKnownHosts}\n# End from ${userKnownHostsPath}\n`;
-            }
-            if (this.settings.sshKnownHosts) {
-                knownHosts += `# Begin from input known hosts\n${this.settings.sshKnownHosts}\n# end from input known hosts\n`;
-            }
-            knownHosts += `# Begin implicitly added github.com\ngithub.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=\n# End implicitly added github.com\n`;
-            this.sshKnownHostsPath = path.join(runnerTemp, `${uniqueId}_known_hosts`);
-            stateHelper.setSshKnownHostsPath(this.sshKnownHostsPath);
-            yield fs.promises.writeFile(this.sshKnownHostsPath, knownHosts);
-            // Configure GIT_SSH_COMMAND
-            const sshPath = yield io.which('ssh', true);
-            this.sshCommand = `"${sshPath}" -i "$RUNNER_TEMP/${path.basename(this.sshKeyPath)}"`;
-            if (this.settings.sshStrict) {
-                this.sshCommand += ' -o StrictHostKeyChecking=yes -o CheckHostIP=no';
-            }
-            this.sshCommand += ` -o "UserKnownHostsFile=$RUNNER_TEMP/${path.basename(this.sshKnownHostsPath)}"`;
-            core.info(`Temporarily overriding GIT_SSH_COMMAND=${this.sshCommand}`);
-            this.git.setEnvironmentVariable('GIT_SSH_COMMAND', this.sshCommand);
-            // Configure core.sshCommand
-            if (this.settings.persistCredentials) {
-                yield this.git.config(SSH_COMMAND_KEY, this.sshCommand);
-            }
-        });
-    }
-    configureToken(configPath, globalConfig) {
-        return __awaiter(this, void 0, void 0, function* () {
-            // Validate args
-            assert.ok((configPath && globalConfig) || (!configPath && !globalConfig), 'Unexpected configureToken parameter combinations');
-            // Default config path
-            if (!configPath && !globalConfig) {
-                configPath = path.join(this.git.getWorkingDirectory(), '.git', 'config');
-            }
-            // Configure a placeholder value. This approach avoids the credential being captured
-            // by process creation audit events, which are commonly logged. For more information,
-            // refer to https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/manage/component-updates/command-line-process-auditing
-            yield this.git.config(this.tokenConfigKey, this.tokenPlaceholderConfigValue, globalConfig);
-            // Replace the placeholder
-            yield this.replaceTokenPlaceholder(configPath || '');
-        });
-    }
-    replaceTokenPlaceholder(configPath) {
-        return __awaiter(this, void 0, void 0, function* () {
-            assert.ok(configPath, 'configPath is not defined');
-            let content = (yield fs.promises.readFile(configPath)).toString();
-            const placeholderIndex = content.indexOf(this.tokenPlaceholderConfigValue);
-            if (placeholderIndex < 0 ||
-                placeholderIndex != content.lastIndexOf(this.tokenPlaceholderConfigValue)) {
-                throw new Error(`Unable to replace auth placeholder in ${configPath}`);
-            }
-            assert.ok(this.tokenConfigValue, 'tokenConfigValue is not defined');
-            content = content.replace(this.tokenPlaceholderConfigValue, this.tokenConfigValue);
-            yield fs.promises.writeFile(configPath, content);
-        });
-    }
-    removeSsh() {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            // SSH key
-            const keyPath = this.sshKeyPath || stateHelper.SshKeyPath;
-            if (keyPath) {
-                try {
-                    yield io.rmRF(keyPath);
-                }
-                catch (err) {
-                    core.debug(`${(_a = err === null || err === void 0 ? void 0 : err.message) !== null && _a !== void 0 ? _a : err}`);
-                    core.warning(`Failed to remove SSH key '${keyPath}'`);
-                }
-            }
-            // SSH known hosts
-            const knownHostsPath = this.sshKnownHostsPath || stateHelper.SshKnownHostsPath;
-            if (knownHostsPath) {
-                try {
-                    yield io.rmRF(knownHostsPath);
-                }
-                catch (_b) {
-                    // Intentionally empty
-                }
-            }
-            // SSH command
-            yield this.removeGitConfig(SSH_COMMAND_KEY);
-        });
-    }
-    removeToken() {
-        return __awaiter(this, void 0, void 0, function* () {
-            // HTTP extra header
-            yield this.removeGitConfig(this.tokenConfigKey);
-        });
-    }
-    removeGitConfig(configKey_1) {
-        return __awaiter(this, arguments, void 0, function* (configKey, submoduleOnly = false) {
-            if (!submoduleOnly) {
-                if ((yield this.git.configExists(configKey)) &&
-                    !(yield this.git.tryConfigUnset(configKey))) {
-                    // Load the config contents
-                    core.warning(`Failed to remove '${configKey}' from the git config`);
-                }
-            }
-            const pattern = regexpHelper.escape(configKey);
-            yield this.git.submoduleForeach(
-            // wrap the pipeline in quotes to make sure it's handled properly by submoduleForeach, rather than just the first part of the pipeline
-            `sh -c "git config --local --name-only --get-regexp '${pattern}' && git config --local --unset-all '${configKey}' || :"`, true);
-        });
-    }
-}
-
-
-/***/ }),
-
 /***/ 738:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -1169,7 +834,6 @@ exports.getSource = getSource;
 exports.cleanup = cleanup;
 const core = __importStar(__nccwpck_require__(2186));
 const fsHelper = __importStar(__nccwpck_require__(7219));
-const gitAuthHelper = __importStar(__nccwpck_require__(2565));
 const gitCommandManager = __importStar(__nccwpck_require__(738));
 const gitDirectoryHelper = __importStar(__nccwpck_require__(8609));
 const githubApiHelper = __importStar(__nccwpck_require__(138));
@@ -1201,11 +865,11 @@ function getSource(settings) {
         let authHelper = null;
         try {
             if (git) {
-                authHelper = gitAuthHelper.createAuthHelper(git, settings);
+                // authHelper = gitAuthHelper.createAuthHelper(git, settings)
                 if (settings.setSafeDirectory) {
                     // Setup the repository path as a safe directory, so if we pass this into a container job with a different user it doesn't fail
                     // Otherwise all git commands we run in a container fail
-                    yield authHelper.configureTempGlobalConfig();
+                    // await authHelper.configureTempGlobalConfig()
                     core.info(`Adding repository directory to the temporary git global config as a safe directory`);
                     yield git
                         .config('safe.directory', settings.repositoryPath, true, true)
@@ -1248,13 +912,10 @@ function getSource(settings) {
             }
             core.endGroup();
             // If we didn't initialize it above, do it now
-            if (!authHelper) {
-                authHelper = gitAuthHelper.createAuthHelper(git, settings);
-            }
+            // if (!authHelper) {
+            //   authHelper = gitAuthHelper.createAuthHelper(git, settings)
+            // }
             // Configure auth
-            // core.startGroup('Setting up auth')
-            // await authHelper.configureAuth()
-            // core.endGroup()
             // Determine the default branch
             if (!settings.ref && !settings.commit) {
                 core.startGroup('Determining the default branch');
@@ -1336,7 +997,7 @@ function getSource(settings) {
             if (settings.submodules) {
                 // Temporarily override global config
                 core.startGroup('Setting up auth for fetching submodules');
-                yield authHelper.configureGlobalAuth();
+                // await authHelper.configureGlobalAuth()
                 core.endGroup();
                 // Checkout submodules
                 core.startGroup('Fetching submodules');
@@ -1347,7 +1008,7 @@ function getSource(settings) {
                 // Persist credentials
                 if (settings.persistCredentials) {
                     core.startGroup('Persisting credentials for submodules');
-                    yield authHelper.configureSubmoduleAuth();
+                    // await authHelper.configureSubmoduleAuth()
                     core.endGroup();
                 }
             }
@@ -1364,10 +1025,10 @@ function getSource(settings) {
             if (authHelper) {
                 if (!settings.persistCredentials) {
                     core.startGroup('Removing auth');
-                    yield authHelper.removeAuth();
+                    // await authHelper.removeAuth()
                     core.endGroup();
                 }
-                authHelper.removeGlobalConfig();
+                // authHelper.removeGlobalConfig()
             }
         }
     });
@@ -1387,12 +1048,12 @@ function cleanup(repositoryPath) {
             return;
         }
         // Remove auth
-        const authHelper = gitAuthHelper.createAuthHelper(git);
+        // const authHelper = gitAuthHelper.createAuthHelper(git)
         try {
             if (stateHelper.PostSetSafeDirectory) {
                 // Setup the repository path as a safe directory, so if we pass this into a container job with a different user it doesn't fail
                 // Otherwise all git commands we run in a container fail
-                yield authHelper.configureTempGlobalConfig();
+                // await authHelper.configureTempGlobalConfig()
                 core.info(`Adding repository directory to the temporary git global config as a safe directory`);
                 yield git
                     .config('safe.directory', repositoryPath, true, true)
@@ -1400,10 +1061,10 @@ function cleanup(repositoryPath) {
                     core.info(`Failed to initialize safe directory with error: ${error}`);
                 });
             }
-            yield authHelper.removeAuth();
+            // await authHelper.removeAuth()
         }
         finally {
-            yield authHelper.removeGlobalConfig();
+            core.info(`completedddddddddddddddddddddddddddddddddddddddddddd`);
         }
     });
 }
@@ -1890,9 +1551,9 @@ function getInputs() {
         // Repository Path
         result.repositoryPath = core.getInput('path') || '.';
         result.repositoryPath = path.resolve(githubWorkspacePath, result.repositoryPath);
-        // if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
-        //     throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
-        // }
+        if (!(result.repositoryPath + path.sep).startsWith(githubWorkspacePath + path.sep)) {
+            throw new Error(`Repository path '${result.repositoryPath}' is not under '${githubWorkspacePath}'`);
+        }
         // Branch, Ref, Commit
         result.ref = core.getInput('ref') || github.context.ref || 'main';
         result.commit = github.context.sha || '';
