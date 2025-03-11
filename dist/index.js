@@ -1755,25 +1755,6 @@ const inputHelper = __importStar(__nccwpck_require__(5480));
 const path = __importStar(__nccwpck_require__(1017));
 const stateHelper = __importStar(__nccwpck_require__(4866));
 const fs = __importStar(__nccwpck_require__(7147));
-function run(result) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a;
-        try {
-            // Register problem matcher
-            coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
-            // Get main sources
-            yield gitSourceProvider.getSource(result);
-            // core.setOutput('ref', sourceSettings.ref);
-        }
-        catch (error) {
-            core.setFailed(`${(_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error}`);
-        }
-        finally {
-            // Unregister problem matcher
-            coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
-        }
-    });
-}
 function processCSVAndRun() {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
@@ -1792,8 +1773,6 @@ function processCSVAndRun() {
                     const result = sourceSettings;
                     result.ref = columns[1];
                     result.repositoryPath = columns[2];
-                    core.setOutput('ref', result.ref);
-                    core.setOutput('path', result.repositoryPath);
                     // result.repositoryPath = sourceSettings.repositoryPath
                     result.clean = sourceSettings.clean;
                     result.filter = sourceSettings.filter;
@@ -1805,6 +1784,7 @@ function processCSVAndRun() {
                         result.repositoryName = submoduleRepoName.includes('/') ? submoduleRepoName.split('/')[1] : submoduleRepoName;
                     core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
                     core.setOutput('ref', result.ref);
+                    core.setOutput('path', result.repositoryPath);
                     yield run(result);
                     core.endGroup();
                 }
@@ -1812,6 +1792,27 @@ function processCSVAndRun() {
         }
         catch (error) {
             core.setFailed(`${(_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error}`);
+        }
+    });
+}
+function run(result) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        try {
+            // Register problem matcher
+            coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
+            core.setOutput('ref', result.ref);
+            core.setOutput('path', result.repositoryPath);
+            // Get main sources
+            yield gitSourceProvider.getSource(result);
+            // core.setOutput('ref', sourceSettings.ref);
+        }
+        catch (error) {
+            core.setFailed(`${(_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error}`);
+        }
+        finally {
+            // Unregister problem matcher
+            coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
         }
     });
 }

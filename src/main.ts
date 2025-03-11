@@ -98,8 +98,6 @@
 // } else {
 //   cleanup();
 // }
-
-
 import * as core from '@actions/core';
 import * as coreCommand from '@actions/core/lib/command';
 import * as gitSourceProvider from './git-source-provider';
@@ -108,23 +106,6 @@ import * as path from 'path';
 import * as stateHelper from './state-helper';
 import * as fs from 'fs';
 import { IGitSourceSettings } from './git-source-settings';
-
-async function run(result: IGitSourceSettings): Promise<void> {
-  try {
-    // Register problem matcher
-    coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
-
-    // Get main sources
-    await gitSourceProvider.getSource(result);
-    // core.setOutput('ref', sourceSettings.ref);
-
-  } catch (error) {
-    core.setFailed(`${(error as any)?.message ?? error}`);
-  } finally {
-    // Unregister problem matcher
-    coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
-  }
-}
 
 async function processCSVAndRun(): Promise<void> {
   try {
@@ -146,8 +127,6 @@ async function processCSVAndRun(): Promise<void> {
         result.ref = columns[1];
         result.repositoryPath = columns[2];
 
-        core.setOutput('ref', result.ref);
-        core.setOutput('path', result.repositoryPath);
         // result.repositoryPath = sourceSettings.repositoryPath
         result.clean = sourceSettings.clean
         result.filter = sourceSettings.filter
@@ -160,7 +139,7 @@ async function processCSVAndRun(): Promise<void> {
 
         core.startGroup(`Processing repository ${result.repositoryOwner}/${result.repositoryName} with ref ${result.ref}`);
         core.setOutput('ref', result.ref);
-        
+        core.setOutput('path', result.repositoryPath);
         await run(result);
         core.endGroup();
       }
@@ -169,6 +148,25 @@ async function processCSVAndRun(): Promise<void> {
     core.setFailed(`${(error as any)?.message ?? error}`);
   }
 }
+
+async function run(result: IGitSourceSettings): Promise<void> {
+  try {
+    // Register problem matcher
+    coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
+    core.setOutput('ref', result.ref);
+    core.setOutput('path', result.repositoryPath);
+    // Get main sources
+    await gitSourceProvider.getSource(result);
+    // core.setOutput('ref', sourceSettings.ref);
+
+  } catch (error) {
+    core.setFailed(`${(error as any)?.message ?? error}`);
+  } finally {
+    // Unregister problem matcher
+    coreCommand.issueCommand('remove-matcher', { owner: 'checkout-git' }, '');
+  }
+}
+
 
 async function cleanup(): Promise<void> {
   try {
