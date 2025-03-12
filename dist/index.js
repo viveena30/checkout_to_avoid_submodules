@@ -2033,9 +2033,8 @@ function run() {
                     const result = {};
                     // const columns = rows[i].split(',').map(col => col.trim());
                     const columns = rows[i].split(',').map((col) => col.trim());
-                    if (columns.length < 3) {
+                    if (columns.length < 3)
                         continue; // Skip invalid rows 
-                    }
                     const SubmoduleRepoName = columns[0];
                     // const SubmoduleRef = columns[1];
                     // sourceSettings.ref = SubmoduleRef  
@@ -2058,7 +2057,8 @@ function run() {
                         // result.repositoryPath = sourceSettings.repositoryPath
                         result.clean = sourceSettings.clean;
                         result.filter = sourceSettings.filter;
-                        result.submodules = sourceSettings.submodules;
+                        // result.submodules = sourceSettings.submodules
+                        result.submodules = false;
                         result.authToken = sourceSettings.authToken;
                         result.setSafeDirectory = sourceSettings.setSafeDirectory;
                         yield gitSourceProvider.getSource(result);

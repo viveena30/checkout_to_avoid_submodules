@@ -36,9 +36,7 @@ async function run(): Promise<void> {
         const result = {} as IGitSourceSettings
         // const columns = rows[i].split(',').map(col => col.trim());
         const columns = rows[i].split(',').map((col: string) => col.trim());
-        if (columns.length < 3) {
-          continue; // Skip invalid rows 
-        } 
+        if (columns.length < 3) continue; // Skip invalid rows 
 
         const SubmoduleRepoName = columns[0];
         // const SubmoduleRef = columns[1];
@@ -70,7 +68,8 @@ async function run(): Promise<void> {
 
           result.clean = sourceSettings.clean
           result.filter = sourceSettings.filter
-          result.submodules = sourceSettings.submodules
+          // result.submodules = sourceSettings.submodules
+          result.submodules = false
           result.authToken = sourceSettings.authToken
           result.setSafeDirectory = sourceSettings.setSafeDirectory
 
