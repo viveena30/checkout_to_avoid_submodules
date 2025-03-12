@@ -745,7 +745,8 @@ class GitCommandManager {
     }
     remoteAdd(remoteName, remoteUrl) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.execGit(['remote', 'add', remoteName, remoteUrl]);
+            // await this.execGit(['remote', 'add', remoteName, remoteUrl])
+            yield this.execGit(['remote', 'set-url', remoteName, remoteUrl]);
         });
     }
     removeEnvironmentVariable(name) {
