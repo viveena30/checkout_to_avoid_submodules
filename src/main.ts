@@ -98,14 +98,9 @@ async function cleanup(): Promise<void> {
     const sourceSettings = await inputHelper.getInputs();
     if (sourceSettings.submodulesCSV){
       run(sourceSettings);
-    }
-  } 
-
-  if (stateHelper.IsPost) {
-    const sourceSettings = await inputHelper.getInputs();
-    if (!sourceSettings.submodulesCSV){
+    } else {
       cleanup();
     }
-  }
+  } 
 })();
 

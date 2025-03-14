@@ -2091,10 +2091,7 @@ function cleanup() {
         if (sourceSettings.submodulesCSV) {
             run(sourceSettings);
         }
-    }
-    if (stateHelper.IsPost) {
-        const sourceSettings = yield inputHelper.getInputs();
-        if (!sourceSettings.submodulesCSV) {
+        else {
             cleanup();
         }
     }
