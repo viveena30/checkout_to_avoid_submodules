@@ -2008,11 +2008,11 @@ const inputHelper = __importStar(__nccwpck_require__(5480));
 const path = __importStar(__nccwpck_require__(1017));
 const stateHelper = __importStar(__nccwpck_require__(4866));
 const fs = __importStar(__nccwpck_require__(7147));
-function run() {
+function run(sourceSettings) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
         try {
-            const sourceSettings = yield inputHelper.getInputs();
+            // const sourceSettings = await inputHelper.getInputs();
             try {
                 // Register problem matcher
                 coreCommand.issueCommand('add-matcher', {}, path.join(__dirname, 'problem-matcher.json'));
@@ -2057,8 +2057,7 @@ function run() {
                         // result.repositoryPath = sourceSettings.repositoryPath
                         result.clean = sourceSettings.clean;
                         result.filter = sourceSettings.filter;
-                        // result.submodules = sourceSettings.submodules
-                        result.submodules = false;
+                        result.submodules = sourceSettings.submodules;
                         result.authToken = sourceSettings.authToken;
                         result.setSafeDirectory = sourceSettings.setSafeDirectory;
                         yield gitSourceProvider.getSource(result);
@@ -2086,13 +2085,20 @@ function cleanup() {
         }
     });
 }
-// Main
-if (!stateHelper.IsPost) {
-    run();
-}
-else {
-    cleanup();
-}
+(() => __awaiter(void 0, void 0, void 0, function* () {
+    if (!stateHelper.IsPost) {
+        const sourceSettings = yield inputHelper.getInputs();
+        if (sourceSettings.submodulesCSV) {
+            run(sourceSettings);
+        }
+    }
+    if (stateHelper.IsPost) {
+        const sourceSettings = yield inputHelper.getInputs();
+        if (!sourceSettings.submodulesCSV) {
+            cleanup();
+        }
+    }
+}))();
 
 
 /***/ }),

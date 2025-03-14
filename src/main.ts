@@ -7,9 +7,9 @@ import * as stateHelper from './state-helper';
 import * as fs from 'fs';
 import {IGitSourceSettings} from './git-source-settings'
 
-async function run(): Promise<void> {
+async function run(sourceSettings: IGitSourceSettings ): Promise<void> {
   try {
-    const sourceSettings = await inputHelper.getInputs();
+    // const sourceSettings = await inputHelper.getInputs();
     try {
       // Register problem matcher
       coreCommand.issueCommand(
@@ -68,8 +68,7 @@ async function run(): Promise<void> {
 
           result.clean = sourceSettings.clean
           result.filter = sourceSettings.filter
-          // result.submodules = sourceSettings.submodules
-          result.submodules = false
+          result.submodules = sourceSettings.submodules
           result.authToken = sourceSettings.authToken
           result.setSafeDirectory = sourceSettings.setSafeDirectory
 
@@ -94,9 +93,19 @@ async function cleanup(): Promise<void> {
   }
 }
 
-// Main
-if (!stateHelper.IsPost) {
-  run();
-} else {
-  cleanup();
-}
+(async () => {
+  if (!stateHelper.IsPost) { 
+    const sourceSettings = await inputHelper.getInputs();
+    if (sourceSettings.submodulesCSV){
+      run(sourceSettings);
+    }
+  } 
+
+  if (stateHelper.IsPost) {
+    const sourceSettings = await inputHelper.getInputs();
+    if (!sourceSettings.submodulesCSV){
+      cleanup();
+    }
+  }
+})();
+
